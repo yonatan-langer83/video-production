@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev -p 3010",
     "build": "npm run generate:types && npm run generate:importmap && cross-env NODE_OPTIONS=--no-deprecation next build",
+    "build:server": "cross-env NODE_OPTIONS=--no-deprecation next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start -p 3010",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation tsx node_modules/payload/bin.js",
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation tsx node_modules/payload/bin.js migrate:create",

@@ -51,6 +51,7 @@ nginx -t && systemctl reload nginx
 
 bash deploy/deploy.sh
 
+npm run init:db || true
 npm run seed || true
 if [ -f data/kabbalists-export.csv ]; then
   npm run import:kabbalists -- ./data/kabbalists-export.csv || true

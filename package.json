@@ -16,6 +16,7 @@
     "seed": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed.ts",
     "migrate:productions": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/migrate-to-productions.ts",
     "sync:schema": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/sync-schema.ts",
+    "init:db": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/init-db.ts",
     "import:kabbalists": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/import-kabbalists.ts",
     "lint": "next lint"
   },

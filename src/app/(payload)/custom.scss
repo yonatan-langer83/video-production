@@ -1,0 +1,109 @@
+:root {
+  --brand: #f50023;
+  --brand-dark: #c4001c;
+}
+
+/* RTL only when document is RTL (Hebrew locale) */
+html[dir='rtl'] .template-default {
+  direction: rtl;
+}
+
+html[dir='ltr'] .template-default {
+  direction: ltr;
+}
+
+.field-description,
+.field-type .description,
+.render-field-description {
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+/* English subtitle line in bilingual descriptions (second line) */
+.field-description {
+  font-size: 0.9rem;
+}
+
+/* Episode field picker guide */
+.episode-field-picker-guide {
+  margin-top: 1rem;
+  border: 1px solid var(--theme-elevation-150, #e5e5e5);
+  border-radius: 6px;
+  padding: 0.75rem;
+  background: var(--theme-elevation-50, #fafafa);
+}
+
+.episode-field-picker-group {
+  margin-bottom: 0.75rem;
+}
+
+.episode-field-picker-group summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.35rem 0;
+}
+
+.episode-field-picker-group summary::-webkit-details-marker {
+  display: none;
+}
+
+.episode-field-picker-group-desc {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--theme-elevation-600, #666);
+  margin-top: 0.15rem;
+}
+
+.episode-field-picker-group-desc-en {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--theme-elevation-500, #888);
+  font-style: italic;
+}
+
+.episode-field-picker-guide ul {
+  margin: 0.5rem 0 0;
+  padding: 0 1rem 0 0;
+  list-style: none;
+}
+
+.episode-field-picker-guide li {
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--theme-elevation-100, #eee);
+}
+
+.episode-field-picker-guide li code {
+  font-size: 0.75rem;
+  background: var(--theme-elevation-100, #f0f0f0);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  margin-left: 0.35rem;
+}
+
+.episode-field-picker-hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--theme-elevation-700, #444);
+}
+
+.episode-field-picker-hint-en {
+  margin: 0.1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--theme-elevation-500, #888);
+  font-style: italic;
+}
+
+/* Brand primary buttons — red background, white text */
+.btn--style-primary,
+button[type='submit'].btn--style-primary {
+  background-color: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.btn--style-primary:hover {
+  background-color: var(--brand-dark);
+  border-color: var(--brand-dark);
+  color: #fff;
+}

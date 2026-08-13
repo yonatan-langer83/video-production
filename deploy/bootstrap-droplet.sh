@@ -19,7 +19,10 @@ npm i -g pm2
 
 mkdir -p "$APP_DIR/data" "$APP_DIR/media"
 if [ ! -d "$APP_DIR/.git" ]; then
-  git clone "$REPO" "$APP_DIR"
+  rm -rf /tmp/video-planner-src
+  git clone "$REPO" /tmp/video-planner-src
+  cp -a /tmp/video-planner-src/. "$APP_DIR/"
+  rm -rf /tmp/video-planner-src
 else
   git -C "$APP_DIR" pull --ff-only
 fi
@@ -48,13 +51,11 @@ nginx -t && systemctl reload nginx
 
 bash deploy/deploy.sh
 
-if [ ! -f data/videoplanner.db ]; then
-  npm run seed || true
-  if [ -f data/kabbalists-export.csv ]; then
-    npm run import:kabbalists -- ./data/kabbalists-export.csv || true
-  fi
-  npm run migrate:productions || true
+npm run seed || true
+if [ -f data/kabbalists-export.csv ]; then
+  npm run import:kabbalists -- ./data/kabbalists-export.csv || true
 fi
+npm run migrate:productions || true
 npm run sync:schema || true
 
 if command -v certbot >/dev/null 2>&1; then

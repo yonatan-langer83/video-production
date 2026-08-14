@@ -14,8 +14,8 @@ export const PRODUCTION_FIELDS: Record<string, StaticFieldMeta> = {
   slug: {
     label: 'מזהה URL',
     labelEn: 'Slug',
-    descriptionHe: 'מזהה ייחודי לכתובת /productions/{slug}. אותיות לatin, מספרים ומקף בלבד.',
-    descriptionEn: 'Unique URL segment for /productions/{slug}. Latin letters, numbers, hyphens.',
+    descriptionHe: 'מזהה ייחודי לכתובת /productions/{slug}. אותיות באנגלית, מספרים ומקף. רווחים הופכים למקף.',
+    descriptionEn: 'Unique URL segment for /productions/{slug}. English letters, numbers, hyphens. Spaces become hyphens.',
   },
   description: {
     label: 'תיאור',

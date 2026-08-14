@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { slugifyProduction } from '@/lib/slug'
 
 type TeamUser = { id: number | string; name: string; role?: string }
 
@@ -50,6 +51,8 @@ export function ProductionForm({
   const [team, setTeam] = useState<TeamUser[]>([])
   const [teamReady, setTeamReady] = useState(false)
   const [selected, setSelected] = useState<string[]>(() => assignedIds(initial?.assignedUsers))
+  const [slug, setSlug] = useState(() => slugifyProduction(initial?.slug || '', { keepTrailingHyphen: true }).slug)
+  const [slugNote, setSlugNote] = useState('')
 
   useEffect(() => {
     void fetch('/api/app/team')
@@ -63,7 +66,7 @@ export function ProductionForm({
     const form = new FormData(e.currentTarget)
     onSubmit({
       name: form.get('name'),
-      slug: form.get('slug'),
+      slug: slugifyProduction(slug).slug,
       description: form.get('description') || null,
       color: form.get('color') || null,
       vimeoFolderUrl: form.get('vimeoFolderUrl') || null,
@@ -100,10 +103,25 @@ export function ProductionForm({
           id="slug"
           name="slug"
           required
-          defaultValue={initial?.slug || ''}
+          value={slug}
           placeholder="mekubalim"
-          pattern="[a-z0-9-]+"
+          autoComplete="off"
+          dir="ltr"
+          className="text-left"
+          onChange={(e) => {
+            const { slug: next, dropped } = slugifyProduction(e.target.value, { keepTrailingHyphen: true })
+            setSlug(next)
+            setSlugNote(
+              dropped
+                ? 'הוסרו תווים שאינם באנגלית (עברית, סימנים וכו׳). מותרות רק אותיות באנגלית, מספרים ומקף. רווחים הופכים למקף.'
+                : '',
+            )
+          }}
         />
+        <p className="text-xs text-muted-foreground">
+          אותיות באנגלית, מספרים ומקף בלבד. רווחים הופכים אוטומטית למקף (-).
+        </p>
+        {slugNote ? <p className="text-xs text-amber-700">{slugNote}</p> : null}
       </div>
       <div className="space-y-2">
         <Label htmlFor="description">תיאור</Label>

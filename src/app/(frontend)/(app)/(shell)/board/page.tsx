@@ -7,8 +7,8 @@ import { StageBadge } from '@/components/StageBadge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   PIPELINE_LABELS,
-  PIPELINE_STAGES,
   allowedNextStages,
+  boardStagesForRole,
   canMoveStage,
   isBackwardMove,
   isPipelineStage,
@@ -59,14 +59,15 @@ export default function BoardPage() {
   }, [load])
 
   const columns = useMemo(() => {
+    const stages = boardStagesForRole(me?.role)
     const map = new Map<PipelineStage, BoardCard[]>()
-    for (const stage of PIPELINE_STAGES) map.set(stage, [])
+    for (const stage of stages) map.set(stage, [])
     for (const doc of docs) {
       const stage = isPipelineStage(doc.pipelineStage) ? doc.pipelineStage : 'planned'
       map.get(stage)?.push(doc)
     }
-    return PIPELINE_STAGES.map((stage) => ({ stage, items: map.get(stage) || [] }))
-  }, [docs])
+    return stages.map((stage) => ({ stage, items: map.get(stage) || [] }))
+  }, [docs, me?.role])
 
   async function move(card: BoardCard, to: PipelineStage) {
     const from = isPipelineStage(card.pipelineStage) ? card.pipelineStage : 'planned'
@@ -106,12 +107,19 @@ export default function BoardPage() {
       </div>
       {error ? <p className="mb-3 text-sm text-red-600">{error}</p> : null}
 
-      <div className="flex gap-3 overflow-x-auto pb-4">
+      <div
+        className={
+          columns.length >= 6
+            ? 'grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6'
+            : columns.length >= 3
+              ? 'grid grid-cols-1 gap-3 sm:grid-cols-3'
+              : 'grid grid-cols-1 gap-3 sm:grid-cols-2'
+        }
+      >
         {columns.map(({ stage, items }) => (
-          <div key={stage} className="w-72 shrink-0">
-            <div className="mb-2 flex items-center justify-between">
-              <StageBadge stage={stage} />
-              <span className="text-xs text-muted-foreground">{items.length}</span>
+          <div key={stage} className="min-w-0">
+            <div className="mb-2">
+              <StageBadge stage={stage} count={items.length} className="w-full justify-between" />
             </div>
             <div className="space-y-2">
               {items.map((card) => {

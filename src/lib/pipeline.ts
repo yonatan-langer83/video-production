@@ -90,15 +90,21 @@ export function allowedNextStages(
   return allowed.filter(([a]) => a === from).map(([, b]) => b)
 }
 
+export const BOARD_STAGES: PipelineStage[] = PIPELINE_STAGES.filter((s) => s !== 'published')
+
 export function queueStagesForRole(role: AppUser['role'] | undefined): PipelineStage[] {
   switch (role) {
     case 'editor':
       return ['editing', 'review']
     case 'subtitler':
-      return ['subtitling']
+      return ['filmed', 'subtitling']
     case 'av_manager':
-      return ['planned', 'to_film']
+      return ['planned', 'to_film', 'filmed']
     default:
-      return [...PIPELINE_STAGES]
+      return [...BOARD_STAGES]
   }
+}
+
+export function boardStagesForRole(role: AppUser['role'] | undefined): PipelineStage[] {
+  return queueStagesForRole(role)
 }

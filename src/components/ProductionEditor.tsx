@@ -31,7 +31,8 @@ export function ProductionEditor({
     })
     setSaving(false)
     if (!res.ok) {
-      setError(mode === 'create' ? 'יצירה נכשלה' : 'שמירה נכשלה')
+      const payload = (await res.json().catch(() => null)) as { error?: string } | null
+      setError(payload?.error || (mode === 'create' ? 'יצירה נכשלה' : 'שמירה נכשלה'))
       return
     }
     const doc = (await res.json()) as { slug: string }

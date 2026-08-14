@@ -4,6 +4,7 @@ import type { AppUser } from '@/access'
 import { resolveRelId } from '@/lib/fieldPermissions'
 import { getPayloadClient } from '@/lib/payload'
 import type { Production, VideoProject } from '@/payload-types'
+import { decodeSlugParam, slugifyProduction } from '@/lib/slug'
 
 export function isAdminOrPM(user: AppUser | null | undefined): boolean {
   return user?.role === 'admin' || user?.role === 'project_manager'
@@ -101,14 +102,30 @@ export async function getProductionBySlug(
   opts?: { includeArchived?: boolean },
 ): Promise<Production | null> {
   const payload = await getPayloadClient()
+  const decoded = decodeSlugParam(slug)
+  const normalized = slugifyProduction(decoded).slug
+  const candidates = Array.from(new Set([decoded, normalized, slug].filter(Boolean)))
+
   const result = await payload.find({
     collection: 'productions',
-    where: { slug: { equals: slug } },
-    limit: 1,
+    where: candidates.length === 1 ? { slug: { equals: candidates[0] } } : { slug: { in: candidates } },
+    limit: 5,
     depth: 1,
     overrideAccess: true,
   })
-  const production = result.docs[0] ?? null
+  let production: Production | null = result.docs[0] ?? null
+
+  if (!production && normalized) {
+    const all = await payload.find({
+      collection: 'productions',
+      limit: 200,
+      depth: 1,
+      overrideAccess: true,
+    })
+    production =
+      all.docs.find((doc) => slugifyProduction(doc.slug).slug === normalized) ?? null
+  }
+
   if (!production) return null
   if (isArchived(production) && !opts?.includeArchived) return null
   if (user && !canSeeProduction(user, production, opts)) return null

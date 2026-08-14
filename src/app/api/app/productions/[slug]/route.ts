@@ -3,6 +3,10 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { getPayloadClient } from '@/lib/payload'
 import { getProductionBySlug, isAdminOrPM } from '@/lib/productions'
+import { slugifyProduction } from '@/lib/slug'
+
+const SLUG_ERROR =
+  'ה-slug חייב להכיל אותיות באנגלית או מספרים. רווחים הופכים למקף; עברית וסימנים אינם מותרים.'
 
 function emptyToNull(val: unknown) {
   return val === '' || val == null ? null : val
@@ -43,8 +47,14 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ slug: string 
   for (const key of ['name', 'slug', 'description', 'color', 'vimeoFolderUrl', 'spotifyUrl', 'youtubeUrl']) {
     if (key in body) {
       const val = body[key]
-      if (key === 'name' || key === 'slug') {
-        data[key] = typeof val === 'string' ? val.trim() : production[key as 'name' | 'slug']
+      if (key === 'name') {
+        data[key] = typeof val === 'string' ? val.trim() : production.name
+      } else if (key === 'slug') {
+        const { slug: next } = slugifyProduction(typeof val === 'string' ? val : '')
+        if (!next) {
+          return NextResponse.json({ error: SLUG_ERROR }, { status: 400 })
+        }
+        data.slug = next
       } else {
         data[key] = emptyToNull(val)
       }

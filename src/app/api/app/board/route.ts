@@ -16,12 +16,8 @@ export async function GET(req: Request) {
   const payload = await getPayloadClient()
   const visibleIds = await visibleProductionIds(user)
 
-  const extra: Where = {}
-  const stages = queueStagesForRole(user.role)
-  const scoped =
-    user.role === 'editor' || user.role === 'subtitler' || user.role === 'av_manager'
-  if (scoped) {
-    extra.pipelineStage = { in: stages }
+  const extra: Where = {
+    pipelineStage: { in: queueStagesForRole(user.role) },
   }
   if (user.role === 'editor') {
     extra.editor = { equals: user.id }

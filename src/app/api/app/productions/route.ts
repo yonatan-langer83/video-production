@@ -3,6 +3,10 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { getPayloadClient } from '@/lib/payload'
 import { isAdminOrPM, productionListWhere } from '@/lib/productions'
+import { slugifyProduction } from '@/lib/slug'
+
+const SLUG_ERROR =
+  'ה-slug חייב להכיל אותיות באנגלית או מספרים. רווחים הופכים למקף; עברית וסימנים אינם מותרים.'
 
 function asOptionalString(val: unknown): string | undefined {
   return typeof val === 'string' && val.trim() ? val : undefined
@@ -40,9 +44,9 @@ export async function POST(req: Request) {
   const body = (await req.json()) as Record<string, unknown>
 
   const name = typeof body.name === 'string' ? body.name.trim() : ''
-  const slug = typeof body.slug === 'string' ? body.slug.trim() : ''
+  const { slug } = slugifyProduction(typeof body.slug === 'string' ? body.slug : '')
   if (!name || !slug) {
-    return NextResponse.json({ error: 'name and slug are required' }, { status: 400 })
+    return NextResponse.json({ error: !name ? 'name and slug are required' : SLUG_ERROR }, { status: 400 })
   }
 
   const assigned = Array.isArray(body.assignedUsers)

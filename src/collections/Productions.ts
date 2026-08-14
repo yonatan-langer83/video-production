@@ -1,8 +1,21 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 
 import { canManageCategories, canReadProductions } from '@/access'
 import { metaAdmin, PRODUCTION_FIELDS } from '@/lib/collectionMeta'
 import { EPISODE_FIELD_OPTIONS } from '@/lib/episodeFields'
+import { slugifyProduction } from '@/lib/slug'
+
+const normalizeSlug: CollectionBeforeValidateHook = ({ data }) => {
+  if (!data) return data
+  if (data.slug != null) {
+    const { slug } = slugifyProduction(String(data.slug))
+    if (!slug) {
+      throw new Error('ה-slug חייב להכיל אותיות באנגלית או מספרים. רווחים הופכים למקף; עברית וסימנים אינם מותרים.')
+    }
+    data.slug = slug
+  }
+  return data
+}
 
 export const Productions: CollectionConfig = {
   slug: 'productions',
@@ -21,6 +34,9 @@ export const Productions: CollectionConfig = {
     update: canManageCategories,
     delete: () => false,
   },
+  hooks: {
+    beforeValidate: [normalizeSlug],
+  },
   fields: [
     {
       name: 'name',
@@ -36,6 +52,13 @@ export const Productions: CollectionConfig = {
       required: true,
       unique: true,
       admin: { description: metaAdmin(PRODUCTION_FIELDS.slug).description },
+      validate: (value: unknown) => {
+        const { slug } = slugifyProduction(String(value || ''))
+        if (!slug) {
+          return 'רק אותיות באנגלית, מספרים ומקף. רווחים הופכים למקף. אין להשתמש בעברית או בסימנים.'
+        }
+        return true
+      },
     },
     {
       name: 'description',

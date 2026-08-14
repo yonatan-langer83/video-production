@@ -23,9 +23,10 @@ import { canCreateEpisode } from '@/lib/fieldPermissions'
 import { STATUS_LABELS } from '@/lib/labels'
 import { getProductionBySlug } from '@/lib/productions'
 import { getPayloadClient } from '@/lib/payload'
+import { PIPELINE_LABELS, PIPELINE_STAGES, isPipelineStage } from '@/lib/pipeline'
 import type { VideoProject } from '@/payload-types'
 
-type SearchParams = Promise<{ q?: string; status?: string }>
+type SearchParams = Promise<{ q?: string; status?: string; stage?: string }>
 
 function formatDate(value?: string | null) {
   if (!value) return '—'
@@ -71,7 +72,7 @@ export default async function ProductionEpisodesPage({
   searchParams: SearchParams
 }) {
   const { slug } = await params
-  const { q, status } = await searchParams
+  const { q, status, stage } = await searchParams
   const user = await getCurrentUser()
   if (!user) notFound()
   const production = await getProductionBySlug(slug, user)
@@ -89,6 +90,11 @@ export default async function ProductionEpisodesPage({
   ]
   if (status && status !== 'all') {
     clauses.push({ status: { equals: status } })
+  }
+  if (stage && isPipelineStage(stage)) {
+    clauses.push({ pipelineStage: { equals: stage } })
+  } else {
+    clauses.push({ pipelineStage: { not_equals: 'published' } })
   }
   if (q?.trim()) {
     clauses.push({ title: { contains: q.trim() } })
@@ -149,6 +155,18 @@ export default async function ProductionEpisodesPage({
               defaultValue={q || ''}
               className="max-w-xs"
             />
+            <select
+              name="stage"
+              defaultValue={stage && isPipelineStage(stage) ? stage : 'active'}
+              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+            >
+              <option value="active">כל השלבים הפעילים</option>
+              {PIPELINE_STAGES.map((s) => (
+                <option key={s} value={s}>
+                  {PIPELINE_LABELS[s].he} / {PIPELINE_LABELS[s].en}
+                </option>
+              ))}
+            </select>
             <select
               name="status"
               defaultValue={status || 'all'}

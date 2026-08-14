@@ -33,17 +33,15 @@ export default async function OverviewPage() {
     })),
   )
 
-  const stages = queueStagesForRole(user.role)
-  const extra: Where = {}
-  if (user.role === 'editor' || user.role === 'subtitler' || user.role === 'av_manager') {
-    extra.pipelineStage = { in: stages }
+  const extra: Where = {
+    pipelineStage: { in: queueStagesForRole(user.role) },
   }
   if (user.role === 'editor') extra.editor = { equals: user.id }
   if (user.role === 'subtitler') extra.subtitler = { equals: user.id }
 
   const { docs: queue } = await payload.find({
     collection: 'video-projects',
-    where: await visibleEpisodeWhere(user, Object.keys(extra).length ? extra : undefined),
+    where: await visibleEpisodeWhere(user, extra),
     sort: user.role === 'av_manager' ? 'filmedAt' : '-updatedAt',
     limit: user.role === 'admin' || user.role === 'project_manager' ? 12 : 30,
     depth: 1,

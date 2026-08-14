@@ -2,6 +2,8 @@ import { createClient } from '@libsql/client'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import { slugifyProduction } from '../src/lib/slug.ts'
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const client = createClient({ url: `file:${path.join(root, 'data/videoplanner.db')}` })
 
@@ -167,6 +169,8 @@ async function migrate() {
     )
     console.log('Added users_id to productions_rels')
   }
+
+  await normalizeProductionSlugs()
 
   await ensurePipelineCollections()
 
@@ -532,6 +536,27 @@ async function ensurePipelineCollections() {
       `payload_locked_documents_rels_${col.name}_idx`,
       `CREATE INDEX IF NOT EXISTS payload_locked_documents_rels_${col.name}_idx ON payload_locked_documents_rels (${col.name})`,
     )
+  }
+}
+
+async function normalizeProductionSlugs() {
+  if (!(await tableExists('productions'))) return
+  const rows = await client.execute('SELECT id, slug FROM productions')
+  const used = new Set<string>()
+  for (const row of rows.rows) {
+    const id = Number(row.id)
+    const current = String(row.slug || '')
+    const { slug: base } = slugifyProduction(current)
+    let next = base || `production-${id}`
+    let n = 2
+    while (used.has(next)) {
+      next = `${base || 'production'}-${n++}`
+    }
+    used.add(next)
+    if (next !== current) {
+      await client.execute('UPDATE productions SET slug = ? WHERE id = ?', [next, id])
+      console.log(`Normalized production slug ${JSON.stringify(current)} -> ${next}`)
+    }
   }
 }
 

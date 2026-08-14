@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+import { slugifyProduction } from '@/lib/slug'
+
 const PUBLIC_PATHS = ['/login', '/api/auth/login']
 const FALLBACK_ORIGIN = 'https://videos.kabbalah.co.il'
 
@@ -15,6 +17,25 @@ function publicOrigin(req: NextRequest): string {
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
+
+  if (pathname.startsWith('/productions/')) {
+    const rest = pathname.slice('/productions/'.length)
+    const slash = rest.indexOf('/')
+    const slugPart = slash === -1 ? rest : rest.slice(0, slash)
+    const after = slash === -1 ? '' : rest.slice(slash)
+    let decoded = slugPart
+    try {
+      decoded = decodeURIComponent(slugPart)
+    } catch {
+      /* keep */
+    }
+    const { slug: next } = slugifyProduction(decoded)
+    if (next && next !== slugPart) {
+      const url = req.nextUrl.clone()
+      url.pathname = `/productions/${next}${after}`
+      return NextResponse.redirect(url)
+    }
+  }
 
   if (
     pathname.startsWith('/admin') ||

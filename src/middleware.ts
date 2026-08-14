@@ -3,7 +3,14 @@ import type { NextRequest } from 'next/server'
 
 import { slugifyProduction } from '@/lib/slug'
 
-const PUBLIC_PATHS = ['/login', '/api/auth/login']
+const PUBLIC_PATHS = [
+  '/login',
+  '/api/auth/login',
+  '/icon.png',
+  '/apple-touch-icon.png',
+  '/og.png',
+  '/favicon.ico',
+]
 const FALLBACK_ORIGIN = 'https://videos.kabbalah.co.il'
 
 function publicOrigin(req: NextRequest): string {
@@ -59,5 +66,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|icon.png|apple-touch-icon.png|og.png).*)'],
 }

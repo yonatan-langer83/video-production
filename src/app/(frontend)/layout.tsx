@@ -21,8 +21,8 @@ export const metadata: Metadata = {
   },
   description,
   icons: {
-    icon: [{ url: '/icon', type: 'image/png' }],
-    apple: [{ url: '/apple-icon', type: 'image/png' }],
+    icon: [{ url: '/icon.png', type: 'image/png' }],
+    apple: [{ url: '/apple-touch-icon.png', type: 'image/png' }],
   },
   openGraph: {
     title,
@@ -30,11 +30,13 @@ export const metadata: Metadata = {
     locale: 'he_IL',
     type: 'website',
     siteName: title,
+    images: [{ url: '/og.png', width: 1200, height: 630, alt: title }],
   },
   twitter: {
     card: 'summary_large_image',
     title,
     description,
+    images: ['/og.png'],
   },
 }
 

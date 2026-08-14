@@ -6,11 +6,13 @@ export function ProductionCoverArt({
   src,
   color,
   name,
+  compact,
   className,
 }: {
   src?: string | null
   color?: string | null
   name?: string
+  compact?: boolean
   className?: string
 }) {
   const bg = color || BRAND_COLOR
@@ -20,7 +22,9 @@ export function ProductionCoverArt({
         <img src={src} alt="" className="h-full w-full object-contain" />
       ) : (
         <div className="flex h-full w-full items-center justify-center">
-          <span className="select-none text-4xl font-bold text-white/90">{name?.trim().slice(0, 1) || '•'}</span>
+          <span className={cn('select-none font-bold text-white/90', compact ? 'text-2xl' : 'text-4xl')}>
+            {name?.trim().slice(0, 1) || '•'}
+          </span>
         </div>
       )}
     </div>

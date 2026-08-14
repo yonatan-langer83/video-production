@@ -143,7 +143,7 @@ export default async function OverviewPage() {
           )}
         </p>
       ) : activeProductions.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2">
           {activeProductions.map((prod) => (
             <ProductionOverviewCard
               key={prod.id}
@@ -160,7 +160,7 @@ export default async function OverviewPage() {
             <h2 className="text-2xl font-semibold tracking-tight">הושלמו</h2>
             <p className="text-sm text-muted-foreground">Completed productions</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-2">
             {completedProductions.map((prod) => (
               <ProductionOverviewCard
                 key={prod.id}
@@ -194,43 +194,50 @@ function ProductionOverviewCard({
   const cover = mediaUrl(prod.coverImage)
   return (
     <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
-      <Link href={`/productions/${prod.slug}`} className="block no-underline">
-        <ProductionCoverArt src={cover} color={prod.color} name={prod.name} />
-      </Link>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">
-          <Link
-            href={`/productions/${prod.slug}`}
-            className="text-foreground no-underline hover:text-primary hover:no-underline"
-          >
-            {prod.name}
-          </Link>
-        </CardTitle>
-        {prod.description ? (
-          <CardDescription>{prod.description.slice(0, 120)}</CardDescription>
-        ) : null}
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">{prod.episodeCount} פרקים</Badge>
-          <Badge variant={prod.status === 'completed' ? 'published' : 'secondary'}>
-            {prod.status === 'completed' ? 'הושלם' : 'בתהליך'}
-          </Badge>
+      <div className="flex flex-row-reverse items-start gap-3 p-3">
+        <Link
+          href={`/productions/${prod.slug}`}
+          className="size-24 shrink-0 overflow-hidden rounded-lg no-underline sm:size-28"
+        >
+          <ProductionCoverArt compact src={cover} color={prod.color} name={prod.name} />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <CardHeader className="p-0">
+            <CardTitle className="text-lg">
+              <Link
+                href={`/productions/${prod.slug}`}
+                className="text-foreground no-underline hover:text-primary hover:no-underline"
+              >
+                {prod.name}
+              </Link>
+            </CardTitle>
+            {prod.description ? (
+              <CardDescription className="line-clamp-2">{prod.description}</CardDescription>
+            ) : null}
+          </CardHeader>
+          <CardContent className="mt-3 p-0">
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="secondary">{prod.episodeCount} פרקים</Badge>
+              <Badge variant={prod.status === 'completed' ? 'published' : 'secondary'}>
+                {prod.status === 'completed' ? 'הושלם' : 'בתהליך'}
+              </Badge>
+            </div>
+            {canManage ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={`/productions/${prod.slug}/edit`}>ערוך</Link>
+                </Button>
+                <ArchiveButton
+                  url={`/api/app/productions/${prod.slug}`}
+                  body={{ archived: true }}
+                  confirmText={`להעביר את "${prod.name}" לארכיון? ההפקה וכל הפרקים שלה יוסתרו.`}
+                  size="sm"
+                />
+              </div>
+            ) : null}
+          </CardContent>
         </div>
-        {canManage ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button asChild variant="secondary" size="sm">
-              <Link href={`/productions/${prod.slug}/edit`}>ערוך</Link>
-            </Button>
-            <ArchiveButton
-              url={`/api/app/productions/${prod.slug}`}
-              body={{ archived: true }}
-              confirmText={`להעביר את "${prod.name}" לארכיון? ההפקה וכל הפרקים שלה יוסתרו.`}
-              size="sm"
-            />
-          </div>
-        ) : null}
-      </CardContent>
+      </div>
     </Card>
   )
 }

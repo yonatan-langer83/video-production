@@ -1,0 +1,20 @@
+---
+description: Official tech stack
+alwaysApply: true
+---
+
+# Tech Stack
+
+- Next.js (App Router only)
+- Tailwind CSS
+- Payload CMS
+- TypeScript
+- npm (this repo)
+
+## Architecture
+- Server Components by default
+- Mutations: keep existing `/api/app/*` routes; Server Actions are optional for new work — do not replace working API routes
+- Prefer Payload Local API on the server
+- Clean separation between UI and business logic
+
+Improve the current app in place. Do not remove or rebuild working features.

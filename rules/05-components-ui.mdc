@@ -1,0 +1,16 @@
+---
+description: Component conventions
+globs: ["**/components/**/*.tsx"]
+---
+
+# Component Rules
+
+- Small, focused components
+- Use `cn()` for classNames
+- Prefer `next/image` for static assets
+- Payload media that needs auth cookies may stay `<img>`
+- Proper accessibility (labels, keyboard)
+- Support dark mode only if the project already uses it
+- Cards: rounded, light border, soft shadow (TailAdmin-like dashboard, not a new template)
+
+Improve existing components. Do not rewrite working UI from scratch.

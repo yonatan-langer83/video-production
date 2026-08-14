@@ -23,22 +23,22 @@
 }
 
 :root {
-  --background: 0 0% 98%;
-  --foreground: 0 0% 10%;
+  --background: 220 20% 96%;
+  --foreground: 222 47% 11%;
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 10%;
+  --card-foreground: 222 47% 11%;
   --primary: 351 100% 48%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 96%;
-  --secondary-foreground: 0 0% 10%;
-  --muted: 0 0% 96%;
-  --muted-foreground: 0 0% 40%;
-  --accent: 0 0% 96%;
-  --accent-foreground: 0 0% 10%;
-  --border: 0 0% 90%;
-  --input: 0 0% 90%;
+  --secondary: 220 14% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 220 14% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 220 14% 95%;
+  --accent-foreground: 222 47% 11%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
   --ring: 351 100% 48%;
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --brand: #f50023;
   --destructive: 0 84% 60%;
 }

@@ -1,0 +1,16 @@
+---
+description: Payload CMS + CRUD patterns
+globs: ["src/collections/**", "src/app/api/app/**"]
+---
+
+# Payload + CRUD Rules
+
+- Every main collection supports full CRUD
+- Soft-archive (`archived`, `delete: () => false`) is delete for this app
+- Proper access control
+- Mutations go through existing `/api/app/*` or Payload Local API — do not rip out working routes
+- Always show loading + error states
+- Revalidate after mutations
+- Prefer Payload Local API on the server
+
+Improve collections and APIs in place. Do not replace working productions, episodes, or board flows.

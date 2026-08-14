@@ -1,0 +1,21 @@
+---
+description: Styling, responsive design and RTL/Hebrew
+globs: ["**/*.{tsx,jsx,css}"]
+---
+
+# Styling & RTL Rules
+
+- Mobile-first design
+- Use Tailwind responsive prefixes correctly
+- Prefer logical properties: `ms-`/`me-`, `ps-`/`pe-`, `start`/`end`
+- Never hardcode left/right when RTL is possible
+- `html` is `lang="he"` `dir="rtl"`
+- Use design tokens from `src/app/(frontend)/globals.css` (brand `#f50023`)
+- Avoid arbitrary values
+
+## Admin chrome (TailAdmin-inspired)
+- Sidebar + sticky top header + gray canvas + white cards
+- Keep brand `#f50023` for primary actions and active nav
+- Do not copy TailAdmin as a new app — restyle the existing shell in place
+
+Improve existing screens toward these rules. Do not replace working layouts wholesale.

@@ -1,0 +1,16 @@
+---
+description: SEO, social sharing and browser icons
+globs: ["**/layout.tsx", "**/page.tsx"]
+---
+
+# SEO & Metadata Rules
+
+Every important page must have:
+- title + description
+- Open Graph (title, description, images)
+- Twitter card (summary_large_image)
+- icons (favicon + apple-touch-icon)
+
+Use Next.js Metadata API. Never leave default metadata.
+
+Add missing metadata to existing layouts. Do not replace working pages to do it.

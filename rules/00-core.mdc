@@ -1,0 +1,22 @@
+---
+description: Core project principles and non-negotiables
+alwaysApply: true
+---
+
+# Core Principles
+
+You are building modern, production-ready websites using Next.js (App Router), Tailwind CSS, and Payload CMS.
+
+## Non-negotiables
+- Always mobile-first and fully responsive
+- Support Hebrew + RTL properly when the content/language is Hebrew
+- Every page/entity must support full CRUD where applicable
+- Always include proper browser tab icons (favicon + apple-touch-icon) and social sharing metadata (title, description, image)
+- Prefer Server Components by default. Only use Client Components when interactivity is required
+- Use TypeScript strictly – no `any`
+- Keep components small and focused
+- Prefer composition over prop drilling
+- Always handle loading, empty, and error states
+
+## Mindset
+Write code as if a senior developer will review it tomorrow. Prioritize clarity, consistency, and maintainability over cleverness.

@@ -2,7 +2,6 @@ import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 
 import {
   canCreateProjects,
-  canDeleteProjects,
   canReadProjects,
   canUpdateProjects,
 } from '@/access'
@@ -61,11 +60,26 @@ export const VideoProjects: CollectionConfig = {
     read: canReadProjects,
     create: canCreateProjects,
     update: canUpdateProjects,
-    delete: canDeleteProjects,
+    delete: () => false,
   },
   hooks: {
     beforeValidate: [validateEpisodeNumber],
     afterChange: [notifyProjectChange],
   },
-  fields: buildEpisodeCatalogFields(),
+  fields: [
+    ...buildEpisodeCatalogFields(),
+    {
+      name: 'archived',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'בארכיון / Archived',
+      admin: { position: 'sidebar' },
+      access: {
+        update: ({ req }) => {
+          const role = req.user && 'role' in req.user ? req.user.role : undefined
+          return role === 'admin' || role === 'project_manager'
+        },
+      },
+    },
+  ],
 }

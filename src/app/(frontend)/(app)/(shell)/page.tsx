@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Where } from 'payload'
 
+import { ArchiveButton } from '@/components/ArchiveButton'
 import { StageBadge } from '@/components/StageBadge'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,18 +10,20 @@ import { requireUser } from '@/lib/auth'
 import { BRAND_COLOR } from '@/lib/brand'
 import { getPayloadClient } from '@/lib/payload'
 import { queueStagesForRole } from '@/lib/pipeline'
-import { getProductionEpisodeCount } from '@/lib/productions'
+import { getProductionEpisodeCount, isAdminOrPM, productionListWhere, visibleEpisodeWhere } from '@/lib/productions'
 import { getEpisodeUrl } from '@/lib/episodeUrls'
 
 export default async function OverviewPage() {
   const user = await requireUser()
-  const canManageProductions = user.role === 'admin' || user.role === 'project_manager'
+  const canManageProductions = isAdminOrPM(user)
 
   const payload = await getPayloadClient()
   const { docs: productions } = await payload.find({
     collection: 'productions',
+    where: productionListWhere(user),
     sort: 'sortOrder',
     limit: 50,
+    user,
   })
 
   const cards = await Promise.all(
@@ -31,16 +34,16 @@ export default async function OverviewPage() {
   )
 
   const stages = queueStagesForRole(user.role)
-  const where: Where = {}
+  const extra: Where = {}
   if (user.role === 'editor' || user.role === 'subtitler' || user.role === 'av_manager') {
-    where.pipelineStage = { in: stages }
+    extra.pipelineStage = { in: stages }
   }
-  if (user.role === 'editor') where.editor = { equals: user.id }
-  if (user.role === 'subtitler') where.subtitler = { equals: user.id }
+  if (user.role === 'editor') extra.editor = { equals: user.id }
+  if (user.role === 'subtitler') extra.subtitler = { equals: user.id }
 
   const { docs: queue } = await payload.find({
     collection: 'video-projects',
-    where,
+    where: await visibleEpisodeWhere(user, Object.keys(extra).length ? extra : undefined),
     sort: user.role === 'av_manager' ? 'filmedAt' : '-updatedAt',
     limit: user.role === 'admin' || user.role === 'project_manager' ? 12 : 30,
     depth: 1,
@@ -140,29 +143,38 @@ export default async function OverviewPage() {
           </p>
         ) : (
           cards.map((prod) => (
-            <Link
-              key={prod.id}
-              href={`/productions/${prod.slug}`}
-              className="group no-underline hover:no-underline"
-            >
-              <Card className="h-full transition-shadow hover:shadow-md">
-                <div
-                  className="h-1 rounded-t-xl"
-                  style={{ background: prod.color || BRAND_COLOR }}
-                />
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg text-foreground group-hover:text-primary">
+            <Card key={prod.id} className="h-full transition-shadow hover:shadow-md">
+              <div className="h-1 rounded-t-xl" style={{ background: prod.color || BRAND_COLOR }} />
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">
+                  <Link
+                    href={`/productions/${prod.slug}`}
+                    className="text-foreground no-underline hover:text-primary hover:no-underline"
+                  >
                     {prod.name}
-                  </CardTitle>
-                  {prod.description ? (
-                    <CardDescription>{prod.description.slice(0, 120)}</CardDescription>
-                  ) : null}
-                </CardHeader>
-                <CardContent>
-                  <Badge variant="secondary">{prod.episodeCount} פרקים</Badge>
-                </CardContent>
-              </Card>
-            </Link>
+                  </Link>
+                </CardTitle>
+                {prod.description ? (
+                  <CardDescription>{prod.description.slice(0, 120)}</CardDescription>
+                ) : null}
+              </CardHeader>
+              <CardContent>
+                <Badge variant="secondary">{prod.episodeCount} פרקים</Badge>
+                {canManageProductions ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button asChild variant="secondary" size="sm">
+                      <Link href={`/productions/${prod.slug}/edit`}>ערוך</Link>
+                    </Button>
+                    <ArchiveButton
+                      url={`/api/app/productions/${prod.slug}`}
+                      body={{ archived: true }}
+                      confirmText={`להעביר את "${prod.name}" לארכיון? ההפקה וכל הפרקים שלה יוסתרו.`}
+                      size="sm"
+                    />
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
           ))
         )}
       </div>

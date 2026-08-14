@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { getCurrentUser } from '@/lib/auth'
 import { getPayloadClient } from '@/lib/payload'
+import { getVisibleEpisode } from '@/lib/productions'
 
 function canEditPlan(role?: string) {
   return role === 'admin' || role === 'project_manager' || role === 'av_manager'
@@ -12,6 +13,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ episode
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { episodeId } = await params
+  const episode = await getVisibleEpisode(episodeId, user)
+  if (!episode) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
     collection: 'script-versions',
@@ -27,9 +31,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ episode
 export async function POST(req: Request, { params }: { params: Promise<{ episodeId: string }> }) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { episodeId } = await params
+  const visible = await getVisibleEpisode(episodeId, user)
+  if (!visible) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   if (!canEditPlan(user.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { episodeId } = await params
   const body = (await req.json()) as { label?: string; fromCurrent?: boolean }
   const payload = await getPayloadClient()
 

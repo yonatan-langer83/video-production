@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Calendar, Video } from 'lucide-react'
 import { notFound } from 'next/navigation'
 
+import { ArchiveButton } from '@/components/ArchiveButton'
 import { EpisodeFieldDisplay } from '@/components/EpisodeFieldDisplay'
 import { StageBadge } from '@/components/StageBadge'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getCurrentUser } from '@/lib/auth'
 import { getFieldsByGroup } from '@/lib/episodeFields'
 import { canEditAnyField } from '@/lib/fieldPermissions'
-import { getProductionBySlug } from '@/lib/productions'
+import { getProductionBySlug, isAdminOrPM } from '@/lib/productions'
 import { getPayloadClient } from '@/lib/payload'
 
 function formatDate(value?: string | null) {
@@ -24,17 +25,20 @@ export default async function EpisodeDetailPage({
   params: Promise<{ slug: string; id: string }>
 }) {
   const { slug, id } = await params
-  const production = await getProductionBySlug(slug)
+  const user = await getCurrentUser()
+  if (!user) notFound()
+  const production = await getProductionBySlug(slug, user)
   if (!production) notFound()
 
-  const user = await getCurrentUser()
   const payload = await getPayloadClient()
   let episode
   try {
-    episode = await payload.findByID({ collection: 'video-projects', id, depth: 1 })
+    episode = await payload.findByID({ collection: 'video-projects', id, depth: 1, user })
   } catch {
     notFound()
   }
+
+  if (episode.archived) notFound()
 
   const epProductionId =
     typeof episode.production === 'object' && episode.production !== null
@@ -78,6 +82,14 @@ export default async function EpisodeDetailPage({
                 ערוך
               </Link>
             </Button>
+          ) : null}
+          {user && isAdminOrPM(user) ? (
+            <ArchiveButton
+              url={`/api/app/projects/${id}`}
+              body={{ archived: true }}
+              confirmText={`להעביר את "${episode.title}" לארכיון?`}
+              redirectTo={`/productions/${slug}`}
+            />
           ) : null}
         </div>
       </div>

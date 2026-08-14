@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import {
+  Archive,
   Calendar,
   Clapperboard,
   Columns3,
@@ -15,6 +16,7 @@ import {
   X,
 } from 'lucide-react'
 
+import { ArchiveButton } from '@/components/ArchiveButton'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { NotificationBell } from './NotificationBell'
@@ -73,20 +75,36 @@ function NavLinks({
         )
       })}
       {showAdmin ? (
-        <Link
-          href="/admin"
-          onClick={onNavigate}
-          className={cn(
-            'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent hover:no-underline',
-            pathname.startsWith('/admin') && 'bg-primary/10 font-medium text-primary',
-          )}
-        >
-          <Settings className="h-4 w-4 shrink-0" />
-          <span>
-            ניהול
-            <span className="block text-xs font-normal text-muted-foreground">Admin</span>
-          </span>
-        </Link>
+        <>
+          <Link
+            href="/archive"
+            onClick={onNavigate}
+            className={cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent hover:no-underline',
+              pathname.startsWith('/archive') && 'bg-primary/10 font-medium text-primary',
+            )}
+          >
+            <Archive className="h-4 w-4 shrink-0" />
+            <span>
+              ארכיון
+              <span className="block text-xs font-normal text-muted-foreground">Archive</span>
+            </span>
+          </Link>
+          <Link
+            href="/admin"
+            onClick={onNavigate}
+            className={cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground no-underline transition-colors hover:bg-accent hover:no-underline',
+              pathname.startsWith('/admin') && 'bg-primary/10 font-medium text-primary',
+            )}
+          >
+            <Settings className="h-4 w-4 shrink-0" />
+            <span>
+              ניהול
+              <span className="block text-xs font-normal text-muted-foreground">Admin</span>
+            </span>
+          </Link>
+        </>
       ) : null}
     </>
   )
@@ -177,7 +195,26 @@ export function AppShell({ userName, userRole, production, children }: Props) {
                 </p>
                 <h1 className="text-lg font-semibold text-white">{production.name}</h1>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {showAdmin ? (
+                  <>
+                    <Link
+                      href={`/productions/${production.slug}/edit`}
+                      className="rounded-md bg-white px-3 py-1.5 text-xs font-medium text-primary no-underline hover:bg-white/90 hover:no-underline"
+                    >
+                      ערוך
+                    </Link>
+                    <ArchiveButton
+                      url={`/api/app/productions/${production.slug}`}
+                      body={{ archived: true }}
+                      label="ארכיון"
+                      confirmText={`להעביר את "${production.name}" לארכיון? ההפקה וכל הפרקים שלה יוסתרו. ניתן לשחזר מארכיון.`}
+                      redirectTo="/"
+                      size="sm"
+                      className="border-white/40 bg-white/15 text-white hover:bg-white/25 hover:text-white"
+                    />
+                  </>
+                ) : null}
                 {production.vimeoFolderUrl ? (
                   <a
                     href={production.vimeoFolderUrl}

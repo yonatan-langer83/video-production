@@ -13,7 +13,7 @@ export default async function ProductionLayout({
 }) {
   const user = await requireUser()
   const { slug } = await params
-  const production = await getProductionBySlug(slug)
+  const production = await getProductionBySlug(slug, user)
   if (!production) notFound()
 
   const payload = await getPayloadClient()

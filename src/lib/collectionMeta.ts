@@ -71,6 +71,18 @@ export const PRODUCTION_FIELDS: Record<string, StaticFieldMeta> = {
     descriptionHe: 'מתמלל שיוקצה אוטומטית לפרקים חדשים.',
     descriptionEn: 'Subtitler auto-assigned on new episodes.',
   },
+  assignedUsers: {
+    label: 'משתמשים משויכים',
+    labelEn: 'Assigned users',
+    descriptionHe: 'עורכים, מתמללים ומנהלי AV שרואים את ההפקה.',
+    descriptionEn: 'Editors, subtitlers, and AV managers who can see this production.',
+  },
+  archived: {
+    label: 'בארכיון',
+    labelEn: 'Archived',
+    descriptionHe: 'מוסתר מהאפליקציה. ניתן לשחזר מארכיון.',
+    descriptionEn: 'Hidden from the app. Restore from Archive.',
+  },
   visibleEpisodeFields: {
     label: 'שדות פרק להצגה',
     labelEn: 'Visible episode fields',
@@ -121,6 +133,12 @@ export const USER_FIELDS: Record<string, StaticFieldMeta> = {
     labelEn: 'Subtitling notifications',
     descriptionHe: 'שינויים בשדות תמלול: דגל תמלול, קישורי וימאו.',
     descriptionEn: 'Changes to subtitling fields and Vimeo links.',
+  },
+  archived: {
+    label: 'בארכיון',
+    labelEn: 'Archived',
+    descriptionHe: 'משתמש מארכב לא יכול להתחבר ולא מופיע בבחירת צוות.',
+    descriptionEn: 'Archived users cannot log in and are hidden from team pickers.',
   },
 }
 

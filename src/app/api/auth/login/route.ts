@@ -19,6 +19,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
   }
 
+  const loggedIn = result.user as { archived?: boolean | null }
+  if (loggedIn?.archived) {
+    return NextResponse.json({ error: 'Account archived' }, { status: 403 })
+  }
+
   const res = NextResponse.json({ user: result.user })
   res.cookies.set(AUTH_COOKIE, result.token, {
     httpOnly: true,

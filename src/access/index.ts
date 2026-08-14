@@ -1,4 +1,4 @@
-import type { Access, FieldAccess, PayloadRequest } from 'payload'
+import type { Access, FieldAccess, PayloadRequest, Where } from 'payload'
 
 import { canEditAnyField, canEditField, resolveProductionFromEpisode, resolveRelId } from '@/lib/fieldPermissions'
 import type { Production, VideoProject } from '@/payload-types'
@@ -8,6 +8,7 @@ export type AppUser = {
   collection: 'users'
   email: string
   role?: 'admin' | 'project_manager' | 'editor' | 'subtitler' | 'av_manager'
+  archived?: boolean | null
 }
 
 export function asAppUser(user: PayloadRequest['user']): AppUser | null {
@@ -38,7 +39,37 @@ export const canManageUsers: Access = ({ req }) => asAppUser(req.user)?.role ===
 
 export const canManageCategories: Access = ({ req }) => isAdminOrPM({ req })
 
-export const canReadProjects: Access = ({ req }) => Boolean(asAppUser(req.user))
+export const canReadProductions: Access = ({ req }) => {
+  const user = asAppUser(req.user)
+  if (!user) return false
+  if (user.role === 'admin' || user.role === 'project_manager') return true
+  return {
+    and: [
+      { archived: { not_equals: true } },
+      {
+        or: [
+          { assignedUsers: { in: [user.id] } },
+          { defaultProjectManager: { equals: user.id } },
+          { defaultEditor: { equals: user.id } },
+          { defaultSubtitler: { equals: user.id } },
+        ],
+      },
+    ],
+  } as Where
+}
+
+export const canReadProjects: Access = async ({ req }) => {
+  const user = asAppUser(req.user)
+  if (!user) return false
+  if (user.role === 'admin' || user.role === 'project_manager') return true
+
+  const { visibleProductionIds } = await import('@/lib/productions')
+  const ids = await visibleProductionIds(user)
+  if (!ids.length) return false
+  return {
+    and: [{ archived: { not_equals: true } }, { production: { in: ids } }],
+  } as Where
+}
 
 export const canCreateProjects: Access = ({ req }) => isAdminOrPM({ req })
 

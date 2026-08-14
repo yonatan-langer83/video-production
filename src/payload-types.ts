@@ -173,6 +173,7 @@ export interface User {
    * Changes to subtitling fields and Vimeo links.
    */
   notifyOnSubtitling?: boolean | null;
+  archived?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -253,6 +254,8 @@ export interface Production {
    * Subtitler auto-assigned on new episodes.
    */
   defaultSubtitler?: (number | null) | User;
+  assignedUsers?: (number | User)[] | null;
+  archived?: boolean | null;
   /**
    * שדות שיופיעו בטבלה, בדף פרטים ובטופס. ריק = כל השדות.
    * Fields shown in list, detail, and forms. Empty = all fields.
@@ -547,6 +550,7 @@ export interface VideoProject {
    * Permanent link to the episode on WordPress.
    */
   wordpressPermalink?: string | null;
+  archived?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -782,6 +786,7 @@ export interface UsersSelect<T extends boolean = true> {
   notifyOnAllChanges?: T;
   notifyOnEditing?: T;
   notifyOnSubtitling?: T;
+  archived?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -815,8 +820,10 @@ export interface ProductionsSelect<T extends boolean = true> {
   defaultProjectManager?: T;
   defaultEditor?: T;
   defaultSubtitler?: T;
+  assignedUsers?: T;
   visibleEpisodeFields?: T;
   editableEpisodeFields?: T;
+  archived?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -873,6 +880,7 @@ export interface VideoProjectsSelect<T extends boolean = true> {
   srtUrl?: T;
   softrRecordId?: T;
   wordpressPermalink?: T;
+  archived?: T;
   updatedAt?: T;
   createdAt?: T;
 }

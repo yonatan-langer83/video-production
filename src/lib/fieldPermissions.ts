@@ -148,7 +148,7 @@ export function filterEditablePatch({
 }): Partial<VideoProject> {
   const filtered: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(data)) {
-    if (key === 'production' || key === 'category') {
+    if (key === 'archived') {
       if (user.role === 'admin' || user.role === 'project_manager') {
         filtered[key] = value
       }

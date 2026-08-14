@@ -2,6 +2,17 @@ import { NextResponse } from 'next/server'
 
 import { getCurrentUser } from '@/lib/auth'
 import { getPayloadClient } from '@/lib/payload'
+import { isAdminOrPM, productionListWhere } from '@/lib/productions'
+
+function asOptionalString(val: unknown): string | undefined {
+  return typeof val === 'string' && val.trim() ? val : undefined
+}
+
+function relId(val: unknown): number | undefined {
+  if (val === '' || val == null) return undefined
+  const n = Number(val)
+  return Number.isFinite(n) ? n : undefined
+}
 
 export async function GET() {
   const user = await getCurrentUser()
@@ -10,6 +21,7 @@ export async function GET() {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'productions',
+    where: productionListWhere(user),
     sort: 'sortOrder',
     limit: 50,
     user,
@@ -21,37 +33,38 @@ export async function GET() {
 export async function POST(req: Request) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (user.role !== 'admin' && user.role !== 'project_manager') {
+  if (!isAdminOrPM(user)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const body = (await req.json()) as {
-    name?: string
-    slug?: string
-    description?: string | null
-    color?: string
-    vimeoFolderUrl?: string | null
-    spotifyUrl?: string | null
-    youtubeUrl?: string | null
-    sortOrder?: number
-  }
+  const body = (await req.json()) as Record<string, unknown>
 
-  if (!body.name?.trim() || !body.slug?.trim()) {
+  const name = typeof body.name === 'string' ? body.name.trim() : ''
+  const slug = typeof body.slug === 'string' ? body.slug.trim() : ''
+  if (!name || !slug) {
     return NextResponse.json({ error: 'name and slug are required' }, { status: 400 })
   }
+
+  const assigned = Array.isArray(body.assignedUsers)
+    ? body.assignedUsers.map((id) => relId(id)).filter((id): id is number => id != null)
+    : undefined
 
   const payload = await getPayloadClient()
   const created = await payload.create({
     collection: 'productions',
     data: {
-      name: body.name.trim(),
-      slug: body.slug.trim(),
-      description: body.description ?? undefined,
-      color: body.color,
-      vimeoFolderUrl: body.vimeoFolderUrl ?? undefined,
-      spotifyUrl: body.spotifyUrl ?? undefined,
-      youtubeUrl: body.youtubeUrl ?? undefined,
-      sortOrder: body.sortOrder,
+      name,
+      slug,
+      description: asOptionalString(body.description),
+      color: typeof body.color === 'string' ? body.color : undefined,
+      vimeoFolderUrl: asOptionalString(body.vimeoFolderUrl),
+      spotifyUrl: asOptionalString(body.spotifyUrl),
+      youtubeUrl: asOptionalString(body.youtubeUrl),
+      defaultProjectManager: relId(body.defaultProjectManager),
+      defaultEditor: relId(body.defaultEditor),
+      defaultSubtitler: relId(body.defaultSubtitler),
+      assignedUsers: assigned,
+      sortOrder: typeof body.sortOrder === 'number' ? body.sortOrder : undefined,
     },
     user,
   })

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Where } from 'payload'
 import { notFound } from 'next/navigation'
 
+import { ArchiveButton } from '@/components/ArchiveButton'
 import { EpisodeLinksCell } from '@/components/EpisodeFieldDisplay'
 import { StageBadge } from '@/components/StageBadge'
 import { Badge } from '@/components/ui/badge'
@@ -71,28 +72,35 @@ export default async function ProductionEpisodesPage({
 }) {
   const { slug } = await params
   const { q, status } = await searchParams
-  const production = await getProductionBySlug(slug)
+  const user = await getCurrentUser()
+  if (!user) notFound()
+  const production = await getProductionBySlug(slug, user)
   if (!production) notFound()
 
-  const user = await getCurrentUser()
   const canCreate = canCreateEpisode(user)
+  const canManage = user.role === 'admin' || user.role === 'project_manager'
 
   const columns = getListColumns(production)
 
   const payload = await getPayloadClient()
-  const where: Where = { production: { equals: production.id } }
+  const clauses: Where[] = [
+    { production: { equals: production.id } },
+    { archived: { not_equals: true } },
+  ]
   if (status && status !== 'all') {
-    where.status = { equals: status }
+    clauses.push({ status: { equals: status } })
   }
   if (q?.trim()) {
-    where.title = { contains: q.trim() }
+    clauses.push({ title: { contains: q.trim() } })
   }
+  const where: Where = { and: clauses }
 
   const { docs } = await payload.find({
     collection: 'video-projects',
     sort: '-episodeNumber',
     limit: 200,
     where,
+    user,
   })
 
   return (
@@ -102,7 +110,29 @@ export default async function ProductionEpisodesPage({
           <h2 className="text-2xl font-semibold">פרקים</h2>
           <p className="text-sm text-muted-foreground">Episodes</p>
         </div>
-        {canCreate ? (
+        {canManage ? (
+          <div className="flex flex-wrap gap-2">
+            <Button asChild>
+              <Link
+                href={`/productions/${slug}/edit`}
+                className="text-white no-underline hover:text-white hover:no-underline"
+              >
+                ערוך הפקה
+              </Link>
+            </Button>
+            <ArchiveButton
+              url={`/api/app/productions/${slug}`}
+              body={{ archived: true }}
+              confirmText={`להעביר את "${production.name}" לארכיון? ההפקה וכל הפרקים שלה יוסתרו. ניתן לשחזר מארכיון.`}
+              redirectTo="/"
+            />
+            {canCreate ? (
+              <Button asChild variant="secondary">
+                <Link href={`/productions/${slug}/episodes/new`}>+ הוסף פרק</Link>
+              </Button>
+            ) : null}
+          </div>
+        ) : canCreate ? (
           <Button asChild>
             <Link href={`/productions/${slug}/episodes/new`}>+ הוסף פרק</Link>
           </Button>
@@ -151,12 +181,13 @@ export default async function ProductionEpisodesPage({
                     ) : null}
                   </TableHead>
                 ))}
+                {canManage ? <TableHead className="w-28">פעולות</TableHead> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
               {docs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="text-muted-foreground">
+                  <TableCell colSpan={columns.length + (canManage ? 1 : 0)} className="text-muted-foreground">
                     אין פרקים.
                     {canCreate ? (
                       <>
@@ -185,6 +216,16 @@ export default async function ProductionEpisodesPage({
                         )}
                       </TableCell>
                     ))}
+                    {canManage ? (
+                      <TableCell>
+                        <ArchiveButton
+                          url={`/api/app/projects/${p.id}`}
+                          body={{ archived: true }}
+                          confirmText={`להעביר את "${p.title}" לארכיון? ניתן לשחזר מארכיון.`}
+                          size="sm"
+                        />
+                      </TableCell>
+                    ) : null}
                   </TableRow>
                 ))
               )}

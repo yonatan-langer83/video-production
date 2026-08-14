@@ -17,7 +17,9 @@ export async function getCurrentUser(): Promise<AppUser | null> {
     headers.set('Authorization', `JWT ${token}`)
     const { user } = await payload.auth({ headers })
     if (!user || user.collection !== 'users') return null
-    return user as AppUser
+    const appUser = user as AppUser
+    if (appUser.archived) return null
+    return appUser
   } catch {
     return null
   }

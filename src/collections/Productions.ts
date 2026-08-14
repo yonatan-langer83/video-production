@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { canManageCategories, canReadProjects } from '@/access'
+import { canManageCategories, canReadProductions } from '@/access'
 import { metaAdmin, PRODUCTION_FIELDS } from '@/lib/collectionMeta'
 import { EPISODE_FIELD_OPTIONS } from '@/lib/episodeFields'
 
@@ -16,10 +16,10 @@ export const Productions: CollectionConfig = {
     defaultColumns: ['name', 'slug', 'sortOrder', 'updatedAt'],
   },
   access: {
-    read: canReadProjects,
+    read: canReadProductions,
     create: canManageCategories,
     update: canManageCategories,
-    delete: canManageCategories,
+    delete: () => false,
   },
   fields: [
     {
@@ -94,7 +94,9 @@ export const Productions: CollectionConfig = {
           type: 'relationship',
           relationTo: 'users',
           label: metaAdmin(PRODUCTION_FIELDS.defaultProjectManager).label,
-          filterOptions: { role: { in: ['admin', 'project_manager'] } },
+          filterOptions: {
+            and: [{ role: { in: ['admin', 'project_manager'] } }, { archived: { not_equals: true } }],
+          },
           admin: { description: metaAdmin(PRODUCTION_FIELDS.defaultProjectManager).description },
         },
         {
@@ -102,7 +104,9 @@ export const Productions: CollectionConfig = {
           type: 'relationship',
           relationTo: 'users',
           label: metaAdmin(PRODUCTION_FIELDS.defaultEditor).label,
-          filterOptions: { role: { in: ['admin', 'editor'] } },
+          filterOptions: {
+            and: [{ role: { in: ['admin', 'editor'] } }, { archived: { not_equals: true } }],
+          },
           admin: { description: metaAdmin(PRODUCTION_FIELDS.defaultEditor).description },
         },
         {
@@ -110,10 +114,28 @@ export const Productions: CollectionConfig = {
           type: 'relationship',
           relationTo: 'users',
           label: metaAdmin(PRODUCTION_FIELDS.defaultSubtitler).label,
-          filterOptions: { role: { in: ['admin', 'subtitler'] } },
+          filterOptions: {
+            and: [{ role: { in: ['admin', 'subtitler'] } }, { archived: { not_equals: true } }],
+          },
           admin: { description: metaAdmin(PRODUCTION_FIELDS.defaultSubtitler).description },
         },
+        {
+          name: 'assignedUsers',
+          type: 'relationship',
+          relationTo: 'users',
+          hasMany: true,
+          label: metaAdmin(PRODUCTION_FIELDS.assignedUsers).label,
+          filterOptions: { archived: { not_equals: true } },
+          admin: { description: metaAdmin(PRODUCTION_FIELDS.assignedUsers).description },
+        },
       ],
+    },
+    {
+      name: 'archived',
+      type: 'checkbox',
+      defaultValue: false,
+      label: metaAdmin(PRODUCTION_FIELDS.archived).label,
+      admin: { position: 'sidebar', description: metaAdmin(PRODUCTION_FIELDS.archived).description },
     },
     {
       name: 'visibleEpisodeFields',

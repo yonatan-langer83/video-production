@@ -10,11 +10,16 @@ export async function GET() {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'users',
-    limit: 50,
+    where: { archived: { not_equals: true } },
+    limit: 100,
     user,
   })
 
   return NextResponse.json({
-    docs: result.docs.map((u) => ({ id: u.id, name: u.name || u.email })),
+    docs: result.docs.map((u) => ({
+      id: u.id,
+      name: u.name || u.email,
+      role: u.role,
+    })),
   })
 }

@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { resolveRelId } from '@/lib/fieldPermissions'
 import { getPayloadClient } from '@/lib/payload'
 import { queueStagesForRole } from '@/lib/pipeline'
+import { episodeListWhere, visibleProductionIds } from '@/lib/productions'
 
 export async function GET(req: Request) {
   const user = await getCurrentUser()
@@ -13,26 +14,30 @@ export async function GET(req: Request) {
   const url = new URL(req.url)
   const production = url.searchParams.get('production')
   const payload = await getPayloadClient()
+  const visibleIds = await visibleProductionIds(user)
 
-  const where: Where = {}
-  if (production) where.production = { equals: production }
-
+  const extra: Where = {}
   const stages = queueStagesForRole(user.role)
   const scoped =
     user.role === 'editor' || user.role === 'subtitler' || user.role === 'av_manager'
   if (scoped) {
-    where.pipelineStage = { in: stages }
+    extra.pipelineStage = { in: stages }
   }
   if (user.role === 'editor') {
-    where.editor = { equals: user.id }
+    extra.editor = { equals: user.id }
   }
   if (user.role === 'subtitler') {
-    where.subtitler = { equals: user.id }
+    extra.subtitler = { equals: user.id }
+  }
+
+  let productionIds = visibleIds
+  if (production) {
+    productionIds = visibleIds.filter((id) => String(id) === String(production))
   }
 
   const { docs } = await payload.find({
     collection: 'video-projects',
-    where,
+    where: episodeListWhere(productionIds, Object.keys(extra).length ? extra : undefined),
     sort: '-episodeNumber',
     limit: 400,
     depth: 1,

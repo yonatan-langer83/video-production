@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { BRAND_COLOR } from '@/lib/brand'
 import { getEpisodeUrl } from '@/lib/episodeUrls'
 import { getPayloadClient } from '@/lib/payload'
+import { visibleEpisodeWhere } from '@/lib/productions'
 
 export async function GET() {
   const user = await getCurrentUser()
@@ -12,6 +13,7 @@ export async function GET() {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
     collection: 'video-projects',
+    where: await visibleEpisodeWhere(user),
     limit: 500,
     depth: 1,
     user,

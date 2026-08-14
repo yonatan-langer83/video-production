@@ -30,7 +30,7 @@ export const Users: CollectionConfig = {
     create: canManageUsers,
     read: isLoggedIn,
     update: canManageUsers,
-    delete: canManageUsers,
+    delete: () => false,
   },
   fields: [
     {
@@ -58,6 +58,13 @@ export const Users: CollectionConfig = {
             { label: 'מנהל AV / AV manager', value: 'av_manager' },
           ],
           admin: { description: metaAdmin(USER_FIELDS.role).description },
+        },
+        {
+          name: 'archived',
+          type: 'checkbox',
+          defaultValue: false,
+          label: metaAdmin(USER_FIELDS.archived).label,
+          admin: { description: metaAdmin(USER_FIELDS.archived).description },
         },
       ],
     },

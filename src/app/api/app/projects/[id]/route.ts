@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { filterEditablePatch, resolveProductionFromEpisode } from '@/lib/fieldPermissions'
 import { getPayloadClient } from '@/lib/payload'
 import { canMoveStage, isPipelineStage } from '@/lib/pipeline'
+import { getVisibleEpisode } from '@/lib/productions'
 import type { Production, VideoProject } from '@/payload-types'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -11,9 +12,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
-  const payload = await getPayloadClient()
-  const doc = await payload.findByID({ collection: 'video-projects', id, user, depth: 1 })
-  return NextResponse.json(doc)
+  const episode = await getVisibleEpisode(id, user)
+  if (!episode) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  return NextResponse.json(episode)
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { getPayloadClient } from '@/lib/payload'
 import { canMoveStage } from '@/lib/pipeline'
+import { getVisibleEpisode } from '@/lib/productions'
 
 function canCreateCut(role?: string) {
   return role === 'admin' || role === 'project_manager' || role === 'editor'
@@ -17,6 +18,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ episode
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { episodeId } = await params
+  const episode = await getVisibleEpisode(episodeId, user)
+  if (!episode) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
   const payload = await getPayloadClient()
   const versions = await payload.find({
     collection: 'review-versions',
@@ -48,6 +52,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ episode
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { episodeId } = await params
+  const episode = await getVisibleEpisode(episodeId, user)
+  if (!episode) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
   const body = (await req.json()) as {
     action?: string
     label?: string

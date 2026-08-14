@@ -54,6 +54,10 @@ async function migrate() {
         name: 'default_subtitler_id',
         ddl: 'ALTER TABLE productions ADD COLUMN default_subtitler_id INTEGER',
       },
+      {
+        name: 'archived',
+        ddl: 'ALTER TABLE productions ADD COLUMN archived INTEGER DEFAULT false',
+      },
     ]
     for (const col of productionCols) {
       if (!(await columnExists('productions', col.name))) {
@@ -118,6 +122,50 @@ async function migrate() {
     if (!(await columnExists('video_projects', 'shoot_to_editor_notes'))) {
       await client.execute(`ALTER TABLE video_projects ADD COLUMN shoot_to_editor_notes TEXT`)
     }
+    if (!(await columnExists('video_projects', 'archived'))) {
+      await client.execute(`ALTER TABLE video_projects ADD COLUMN archived INTEGER DEFAULT false`)
+      console.log('Added archived to video_projects')
+    }
+  }
+
+  if (await tableExists('users')) {
+    if (!(await columnExists('users', 'archived'))) {
+      await client.execute(`ALTER TABLE users ADD COLUMN archived INTEGER DEFAULT false`)
+      console.log('Added archived to users')
+    }
+  }
+
+  if (!(await tableExists('productions_rels'))) {
+    await client.execute(`
+      CREATE TABLE IF NOT EXISTS productions_rels (
+        id INTEGER PRIMARY KEY NOT NULL,
+        "order" INTEGER,
+        parent_id INTEGER NOT NULL,
+        path TEXT NOT NULL,
+        users_id INTEGER,
+        FOREIGN KEY (parent_id) REFERENCES productions(id) ON UPDATE no action ON DELETE cascade,
+        FOREIGN KEY (users_id) REFERENCES users(id) ON UPDATE no action ON DELETE cascade
+      )
+    `)
+    await client.execute(
+      `CREATE INDEX IF NOT EXISTS productions_rels_order_idx ON productions_rels ("order")`,
+    )
+    await client.execute(
+      `CREATE INDEX IF NOT EXISTS productions_rels_parent_idx ON productions_rels (parent_id)`,
+    )
+    await client.execute(
+      `CREATE INDEX IF NOT EXISTS productions_rels_path_idx ON productions_rels (path)`,
+    )
+    await client.execute(
+      `CREATE INDEX IF NOT EXISTS productions_rels_users_id_idx ON productions_rels (users_id)`,
+    )
+    console.log('Created productions_rels table')
+  } else if (!(await columnExists('productions_rels', 'users_id'))) {
+    await client.execute(`ALTER TABLE productions_rels ADD COLUMN users_id INTEGER REFERENCES users(id)`)
+    await client.execute(
+      `CREATE INDEX IF NOT EXISTS productions_rels_users_id_idx ON productions_rels (users_id)`,
+    )
+    console.log('Added users_id to productions_rels')
   }
 
   await ensurePipelineCollections()

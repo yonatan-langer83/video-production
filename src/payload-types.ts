@@ -225,8 +225,8 @@ export interface Production {
    */
   status?: ('in_process' | 'completed') | null;
   /**
-   * תמונה שתוצג בכרטיס ההפקה בדף הבית.
-   * Picture shown on the production card on the home page.
+   * מומלץ ריבוע 1:1 כמו Spotify (למשל 1080×1080 או 3000×3000). גם 1920×1080 (YouTube) מתאים — התמונה תוצג במלואה בכרטיס בלי חיתוך.
+   * Recommended square 1:1 like Spotify (e.g. 1080×1080 or 3000×3000). 1920×1080 (YouTube) also works — the full image is shown on the card, uncropped.
    */
   coverImage?: (number | null) | Media;
   /**

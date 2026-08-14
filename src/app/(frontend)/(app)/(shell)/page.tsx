@@ -2,12 +2,12 @@ import Link from 'next/link'
 import type { Where } from 'payload'
 
 import { ArchiveButton } from '@/components/ArchiveButton'
+import { ProductionCoverArt } from '@/components/ProductionCoverArt'
 import { StageBadge } from '@/components/StageBadge'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { requireUser } from '@/lib/auth'
-import { BRAND_COLOR } from '@/lib/brand'
 import { getPayloadClient } from '@/lib/payload'
 import { queueStagesForRole } from '@/lib/pipeline'
 import { getProductionEpisodeCount, isAdminOrPM, productionListWhere, visibleEpisodeWhere } from '@/lib/productions'
@@ -143,7 +143,7 @@ export default async function OverviewPage() {
           )}
         </p>
       ) : activeProductions.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {activeProductions.map((prod) => (
             <ProductionOverviewCard
               key={prod.id}
@@ -160,7 +160,7 @@ export default async function OverviewPage() {
             <h2 className="text-2xl font-semibold tracking-tight">הושלמו</h2>
             <p className="text-sm text-muted-foreground">Completed productions</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {completedProductions.map((prod) => (
               <ProductionOverviewCard
                 key={prod.id}
@@ -194,12 +194,9 @@ function ProductionOverviewCard({
   const cover = mediaUrl(prod.coverImage)
   return (
     <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
-      {cover ? (
-        <img src={cover} alt="" className="h-36 w-full object-cover" />
-      ) : (
-        <div className="h-1 rounded-t-xl" style={{ background: prod.color || BRAND_COLOR }} />
-      )}
-      <div className="h-1" style={{ background: prod.color || BRAND_COLOR }} />
+      <Link href={`/productions/${prod.slug}`} className="block no-underline">
+        <ProductionCoverArt src={cover} color={prod.color} name={prod.name} />
+      </Link>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">
           <Link

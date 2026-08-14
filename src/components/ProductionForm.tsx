@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react'
 
+import { CoverImageUpload } from '@/components/CoverImageUpload'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -69,6 +70,7 @@ export function ProductionForm({
   const [coverId, setCoverId] = useState(() => relId(initial?.coverImage))
   const [coverPreview, setCoverPreview] = useState(() => mediaUrl(initial?.coverImage))
   const [uploadingCover, setUploadingCover] = useState(false)
+  const [coverError, setCoverError] = useState('')
 
   useEffect(() => {
     void fetch('/api/app/team')
@@ -109,7 +111,7 @@ export function ProductionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid max-w-lg gap-4">
+    <form onSubmit={handleSubmit} className="grid max-w-xl gap-4">
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       <div className="space-y-2">
         <Label htmlFor="name">שם ההפקה *</Label>
@@ -179,47 +181,33 @@ export function ProductionForm({
           />
         </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="coverImage">תמונה</Label>
-        {coverPreview ? (
-          <img src={coverPreview} alt="" className="h-28 w-full rounded-md object-cover" />
-        ) : null}
-        <Input
-          id="coverImage"
-          type="file"
-          accept="image/*"
-          disabled={uploadingCover}
-          onChange={(e) => {
-            const file = e.target.files?.[0]
-            if (!file) return
-            setUploadingCover(true)
-            const data = new FormData()
-            data.append('file', file)
-            void fetch('/api/app/media', { method: 'POST', body: data })
-              .then(async (res) => {
-                if (!res.ok) throw new Error('upload failed')
-                const doc = (await res.json()) as { id: number | string; url?: string }
-                setCoverId(String(doc.id))
-                setCoverPreview(doc.url || URL.createObjectURL(file))
-              })
-              .catch(() => alert('העלאת התמונה נכשלה'))
-              .finally(() => setUploadingCover(false))
-          }}
-        />
-        {coverId ? (
-          <button
-            type="button"
-            className="text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => {
-              setCoverId('')
-              setCoverPreview(null)
-            }}
-          >
-            הסר תמונה
-          </button>
-        ) : null}
-        {uploadingCover ? <p className="text-xs text-muted-foreground">מעלה תמונה...</p> : null}
-      </div>
+      <CoverImageUpload
+        previewUrl={coverPreview}
+        color={color}
+        name={initial?.name}
+        uploading={uploadingCover}
+        onFile={(file) => {
+          setCoverError('')
+          setUploadingCover(true)
+          const data = new FormData()
+          data.append('file', file)
+          void fetch('/api/app/media', { method: 'POST', body: data })
+            .then(async (res) => {
+              if (!res.ok) throw new Error('upload failed')
+              const doc = (await res.json()) as { id: number | string; url?: string }
+              setCoverId(String(doc.id))
+              setCoverPreview(doc.url || URL.createObjectURL(file))
+            })
+            .catch(() => setCoverError('העלאת התמונה נכשלה'))
+            .finally(() => setUploadingCover(false))
+        }}
+        onRemove={() => {
+          setCoverId('')
+          setCoverPreview(null)
+          setCoverError('')
+        }}
+      />
+      {coverError ? <p className="text-sm text-red-600">{coverError}</p> : null}
       <div className="space-y-2">
         <Label htmlFor="vimeoFolderUrl">General Vimeo Folder</Label>
         <Input id="vimeoFolderUrl" name="vimeoFolderUrl" defaultValue={initial?.vimeoFolderUrl || ''} />

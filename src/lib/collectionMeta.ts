@@ -36,10 +36,12 @@ export const PRODUCTION_FIELDS: Record<string, StaticFieldMeta> = {
     descriptionEn: 'In process or completed. Completed productions appear lower on the home page.',
   },
   coverImage: {
-    label: 'תמונה',
-    labelEn: 'Picture',
-    descriptionHe: 'תמונה שתוצג בכרטיס ההפקה בדף הבית.',
-    descriptionEn: 'Picture shown on the production card on the home page.',
+    label: 'תמונת כיסוי',
+    labelEn: 'Cover image',
+    descriptionHe:
+      'מומלץ ריבוע 1:1 כמו Spotify (למשל 1080×1080 או 3000×3000). גם 1920×1080 (YouTube) מתאים — התמונה תוצג במלואה בכרטיס בלי חיתוך.',
+    descriptionEn:
+      'Recommended square 1:1 like Spotify (e.g. 1080×1080 or 3000×3000). 1920×1080 (YouTube) also works — the full image is shown on the card, uncropped.',
   },
   sortOrder: {
     label: 'סדר',

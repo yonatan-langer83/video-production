@@ -70,6 +70,12 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ slug: string 
       ? raw.map((id) => relValue(id)).filter((id) => id != null)
       : []
   }
+  if ('status' in body) {
+    data.status = body.status === 'completed' ? 'completed' : 'in_process'
+  }
+  if ('coverImage' in body) {
+    data.coverImage = relValue(body.coverImage)
+  }
   if ('archived' in body) {
     data.archived = Boolean(body.archived)
   }

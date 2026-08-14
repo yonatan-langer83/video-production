@@ -220,6 +220,16 @@ export interface Production {
    */
   color?: string | null;
   /**
+   * בתהליך או הושלם. הושלמו מופיעות למטה בדף הבית.
+   * In process or completed. Completed productions appear lower on the home page.
+   */
+  status?: ('in_process' | 'completed') | null;
+  /**
+   * תמונה שתוצג בכרטיס ההפקה בדף הבית.
+   * Picture shown on the production card on the home page.
+   */
+  coverImage?: (number | null) | Media;
+  /**
    * מספר לסידור ההפקות בדף הבית (נמוך = קודם).
    * Sort order on the home page (lower = first).
    */
@@ -813,6 +823,8 @@ export interface ProductionsSelect<T extends boolean = true> {
   slug?: T;
   description?: T;
   color?: T;
+  status?: T;
+  coverImage?: T;
   sortOrder?: T;
   vimeoFolderUrl?: T;
   spotifyUrl?: T;

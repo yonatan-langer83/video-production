@@ -28,6 +28,7 @@ export async function GET() {
     where: productionListWhere(user),
     sort: 'sortOrder',
     limit: 50,
+    depth: 1,
     user,
   })
 
@@ -61,6 +62,8 @@ export async function POST(req: Request) {
       slug,
       description: asOptionalString(body.description),
       color: typeof body.color === 'string' ? body.color : undefined,
+      status: body.status === 'completed' ? 'completed' : 'in_process',
+      coverImage: relId(body.coverImage),
       vimeoFolderUrl: asOptionalString(body.vimeoFolderUrl),
       spotifyUrl: asOptionalString(body.spotifyUrl),
       youtubeUrl: asOptionalString(body.youtubeUrl),

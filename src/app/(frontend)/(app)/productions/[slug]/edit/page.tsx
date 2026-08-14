@@ -34,6 +34,8 @@ export default async function EditProductionPage({
         slug: production.slug,
         description: production.description,
         color: production.color,
+        status: production.status === 'completed' ? 'completed' : 'in_process',
+        coverImage: production.coverImage ?? null,
         vimeoFolderUrl: production.vimeoFolderUrl,
         spotifyUrl: production.spotifyUrl,
         youtubeUrl: production.youtubeUrl,

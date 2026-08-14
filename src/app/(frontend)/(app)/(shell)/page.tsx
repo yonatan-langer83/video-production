@@ -12,6 +12,7 @@ import { getPayloadClient } from '@/lib/payload'
 import { queueStagesForRole } from '@/lib/pipeline'
 import { getProductionEpisodeCount, isAdminOrPM, productionListWhere, visibleEpisodeWhere } from '@/lib/productions'
 import { getEpisodeUrl } from '@/lib/episodeUrls'
+import { mediaUrl } from '@/lib/videoEmbed'
 
 export default async function OverviewPage() {
   const user = await requireUser()
@@ -23,6 +24,7 @@ export default async function OverviewPage() {
     where: productionListWhere(user),
     sort: 'sortOrder',
     limit: 50,
+    depth: 1,
     user,
   })
 
@@ -32,6 +34,8 @@ export default async function OverviewPage() {
       episodeCount: await getProductionEpisodeCount(prod.id),
     })),
   )
+  const activeProductions = cards.filter((p) => p.status !== 'completed')
+  const completedProductions = cards.filter((p) => p.status === 'completed')
 
   const extra: Where = {
     pipelineStage: { in: queueStagesForRole(user.role) },
@@ -127,55 +131,109 @@ export default async function OverviewPage() {
         ) : null}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.length === 0 ? (
-          <p className="text-muted-foreground">
-            אין הפקות עדיין.{' '}
-            {canManageProductions ? (
-              <Link href="/productions/new" className="text-primary hover:underline">
-                הוסף הפקה ראשונה
-              </Link>
-            ) : (
-              'פנה למנהל המערכת.'
-            )}
-          </p>
-        ) : (
-          cards.map((prod) => (
-            <Card key={prod.id} className="h-full transition-shadow hover:shadow-md">
-              <div className="h-1 rounded-t-xl" style={{ background: prod.color || BRAND_COLOR }} />
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">
-                  <Link
-                    href={`/productions/${prod.slug}`}
-                    className="text-foreground no-underline hover:text-primary hover:no-underline"
-                  >
-                    {prod.name}
-                  </Link>
-                </CardTitle>
-                {prod.description ? (
-                  <CardDescription>{prod.description.slice(0, 120)}</CardDescription>
-                ) : null}
-              </CardHeader>
-              <CardContent>
-                <Badge variant="secondary">{prod.episodeCount} פרקים</Badge>
-                {canManageProductions ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Button asChild variant="secondary" size="sm">
-                      <Link href={`/productions/${prod.slug}/edit`}>ערוך</Link>
-                    </Button>
-                    <ArchiveButton
-                      url={`/api/app/productions/${prod.slug}`}
-                      body={{ archived: true }}
-                      confirmText={`להעביר את "${prod.name}" לארכיון? ההפקה וכל הפרקים שלה יוסתרו.`}
-                      size="sm"
-                    />
-                  </div>
-                ) : null}
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+      {activeProductions.length === 0 && completedProductions.length === 0 ? (
+        <p className="text-muted-foreground">
+          אין הפקות עדיין.{' '}
+          {canManageProductions ? (
+            <Link href="/productions/new" className="text-primary hover:underline">
+              הוסף הפקה ראשונה
+            </Link>
+          ) : (
+            'פנה למנהל המערכת.'
+          )}
+        </p>
+      ) : activeProductions.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {activeProductions.map((prod) => (
+            <ProductionOverviewCard
+              key={prod.id}
+              prod={prod}
+              canManage={canManageProductions}
+            />
+          ))}
+        </div>
+      ) : null}
+
+      {completedProductions.length > 0 ? (
+        <>
+          <div className="mb-6 mt-10">
+            <h2 className="text-2xl font-semibold tracking-tight">הושלמו</h2>
+            <p className="text-sm text-muted-foreground">Completed productions</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {completedProductions.map((prod) => (
+              <ProductionOverviewCard
+                key={prod.id}
+                prod={prod}
+                canManage={canManageProductions}
+              />
+            ))}
+          </div>
+        </>
+      ) : null}
     </>
+  )
+}
+
+function ProductionOverviewCard({
+  prod,
+  canManage,
+}: {
+  prod: {
+    id: number | string
+    name: string
+    slug: string
+    description?: string | null
+    color?: string | null
+    status?: string | null
+    coverImage?: unknown
+    episodeCount: number
+  }
+  canManage: boolean
+}) {
+  const cover = mediaUrl(prod.coverImage)
+  return (
+    <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+      {cover ? (
+        <img src={cover} alt="" className="h-36 w-full object-cover" />
+      ) : (
+        <div className="h-1 rounded-t-xl" style={{ background: prod.color || BRAND_COLOR }} />
+      )}
+      <div className="h-1" style={{ background: prod.color || BRAND_COLOR }} />
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">
+          <Link
+            href={`/productions/${prod.slug}`}
+            className="text-foreground no-underline hover:text-primary hover:no-underline"
+          >
+            {prod.name}
+          </Link>
+        </CardTitle>
+        {prod.description ? (
+          <CardDescription>{prod.description.slice(0, 120)}</CardDescription>
+        ) : null}
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary">{prod.episodeCount} פרקים</Badge>
+          <Badge variant={prod.status === 'completed' ? 'published' : 'secondary'}>
+            {prod.status === 'completed' ? 'הושלם' : 'בתהליך'}
+          </Badge>
+        </div>
+        {canManage ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button asChild variant="secondary" size="sm">
+              <Link href={`/productions/${prod.slug}/edit`}>ערוך</Link>
+            </Button>
+            <ArchiveButton
+              url={`/api/app/productions/${prod.slug}`}
+              body={{ archived: true }}
+              confirmText={`להעביר את "${prod.name}" לארכיון? ההפקה וכל הפרקים שלה יוסתרו.`}
+              size="sm"
+            />
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
   )
 }

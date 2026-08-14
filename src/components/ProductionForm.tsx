@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { BRAND_COLOR } from '@/lib/brand'
 import { slugifyProduction } from '@/lib/slug'
+import { mediaUrl } from '@/lib/videoEmbed'
 
 type TeamUser = { id: number | string; name: string; role?: string }
 
@@ -15,6 +17,8 @@ export type ProductionFormValues = {
   slug?: string
   description?: string | null
   color?: string | null
+  status?: 'in_process' | 'completed' | null
+  coverImage?: number | string | { id?: number | string; url?: string | null } | null
   vimeoFolderUrl?: string | null
   spotifyUrl?: string | null
   youtubeUrl?: string | null
@@ -28,6 +32,11 @@ function relId(value: ProductionFormValues['defaultProjectManager']): string {
   if (!value) return ''
   if (typeof value === 'object') return String(value.id || '')
   return String(value)
+}
+
+function hexColor(value?: string | null): string {
+  const v = (value || BRAND_COLOR).trim()
+  return /^#[0-9a-fA-F]{6}$/.test(v) ? v : BRAND_COLOR
 }
 
 function assignedIds(value: ProductionFormValues['assignedUsers']): string[] {
@@ -53,6 +62,13 @@ export function ProductionForm({
   const [selected, setSelected] = useState<string[]>(() => assignedIds(initial?.assignedUsers))
   const [slug, setSlug] = useState(() => slugifyProduction(initial?.slug || '', { keepTrailingHyphen: true }).slug)
   const [slugNote, setSlugNote] = useState('')
+  const [color, setColor] = useState(() => hexColor(initial?.color))
+  const [status, setStatus] = useState<'in_process' | 'completed'>(
+    initial?.status === 'completed' ? 'completed' : 'in_process',
+  )
+  const [coverId, setCoverId] = useState(() => relId(initial?.coverImage))
+  const [coverPreview, setCoverPreview] = useState(() => mediaUrl(initial?.coverImage))
+  const [uploadingCover, setUploadingCover] = useState(false)
 
   useEffect(() => {
     void fetch('/api/app/team')
@@ -68,7 +84,9 @@ export function ProductionForm({
       name: form.get('name'),
       slug: slugifyProduction(slug).slug,
       description: form.get('description') || null,
-      color: form.get('color') || null,
+      color,
+      status,
+      coverImage: coverId || null,
       vimeoFolderUrl: form.get('vimeoFolderUrl') || null,
       spotifyUrl: form.get('spotifyUrl') || null,
       youtubeUrl: form.get('youtubeUrl') || null,
@@ -128,8 +146,79 @@ export function ProductionForm({
         <Textarea id="description" name="description" defaultValue={initial?.description || ''} />
       </div>
       <div className="space-y-2">
+        <Label htmlFor="status">סטטוס</Label>
+        <select
+          id="status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value === 'completed' ? 'completed' : 'in_process')}
+          className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+        >
+          <option value="in_process">בתהליך / In process</option>
+          <option value="completed">הושלם / Completed</option>
+        </select>
+      </div>
+      <div className="space-y-2">
         <Label htmlFor="color">צבע</Label>
-        <Input id="color" name="color" defaultValue={initial?.color || '#f50023'} />
+        <div className="flex items-center gap-3">
+          <input
+            id="color"
+            type="color"
+            value={hexColor(color)}
+            onChange={(e) => setColor(e.target.value)}
+            className="h-10 w-14 cursor-pointer rounded-md border border-input bg-transparent p-1"
+          />
+          <Input
+            dir="ltr"
+            className="max-w-[8rem] text-left font-mono"
+            value={color}
+            onChange={(e) => {
+              const next = e.target.value.trim()
+              setColor(next.startsWith('#') ? next : `#${next}`)
+            }}
+            onBlur={() => setColor(hexColor(color))}
+          />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="coverImage">תמונה</Label>
+        {coverPreview ? (
+          <img src={coverPreview} alt="" className="h-28 w-full rounded-md object-cover" />
+        ) : null}
+        <Input
+          id="coverImage"
+          type="file"
+          accept="image/*"
+          disabled={uploadingCover}
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (!file) return
+            setUploadingCover(true)
+            const data = new FormData()
+            data.append('file', file)
+            void fetch('/api/app/media', { method: 'POST', body: data })
+              .then(async (res) => {
+                if (!res.ok) throw new Error('upload failed')
+                const doc = (await res.json()) as { id: number | string; url?: string }
+                setCoverId(String(doc.id))
+                setCoverPreview(doc.url || URL.createObjectURL(file))
+              })
+              .catch(() => alert('העלאת התמונה נכשלה'))
+              .finally(() => setUploadingCover(false))
+          }}
+        />
+        {coverId ? (
+          <button
+            type="button"
+            className="text-xs text-muted-foreground hover:text-foreground"
+            onClick={() => {
+              setCoverId('')
+              setCoverPreview(null)
+            }}
+          >
+            הסר תמונה
+          </button>
+        ) : null}
+        {uploadingCover ? <p className="text-xs text-muted-foreground">מעלה תמונה...</p> : null}
       </div>
       <div className="space-y-2">
         <Label htmlFor="vimeoFolderUrl">General Vimeo Folder</Label>

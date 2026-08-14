@@ -60,6 +60,14 @@ async function migrate() {
         name: 'archived',
         ddl: 'ALTER TABLE productions ADD COLUMN archived INTEGER DEFAULT false',
       },
+      {
+        name: 'status',
+        ddl: "ALTER TABLE productions ADD COLUMN status TEXT DEFAULT 'in_process'",
+      },
+      {
+        name: 'cover_image_id',
+        ddl: 'ALTER TABLE productions ADD COLUMN cover_image_id INTEGER REFERENCES media(id)',
+      },
     ]
     for (const col of productionCols) {
       if (!(await columnExists('productions', col.name))) {

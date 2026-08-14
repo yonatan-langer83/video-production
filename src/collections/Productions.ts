@@ -26,7 +26,7 @@ export const Productions: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     group: { he: 'תוכן', en: 'Content' },
-    defaultColumns: ['name', 'slug', 'sortOrder', 'updatedAt'],
+    defaultColumns: ['name', 'slug', 'status', 'sortOrder', 'updatedAt'],
   },
   access: {
     read: canReadProductions,
@@ -72,6 +72,24 @@ export const Productions: CollectionConfig = {
       label: metaAdmin(PRODUCTION_FIELDS.color).label,
       defaultValue: '#f50023',
       admin: { description: metaAdmin(PRODUCTION_FIELDS.color).description },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      label: metaAdmin(PRODUCTION_FIELDS.status).label,
+      defaultValue: 'in_process',
+      options: [
+        { label: 'בתהליך / In process', value: 'in_process' },
+        { label: 'הושלם / Completed', value: 'completed' },
+      ],
+      admin: { description: metaAdmin(PRODUCTION_FIELDS.status).description },
+    },
+    {
+      name: 'coverImage',
+      type: 'upload',
+      relationTo: 'media',
+      label: metaAdmin(PRODUCTION_FIELDS.coverImage).label,
+      admin: { description: metaAdmin(PRODUCTION_FIELDS.coverImage).description },
     },
     {
       name: 'sortOrder',

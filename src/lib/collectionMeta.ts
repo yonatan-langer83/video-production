@@ -26,8 +26,20 @@ export const PRODUCTION_FIELDS: Record<string, StaticFieldMeta> = {
   color: {
     label: 'צבע',
     labelEn: 'Color',
-    descriptionHe: 'קוד HEX לתצוגה בלוח שנה, כרטיסים ותגיות.',
-    descriptionEn: 'HEX color for calendar, cards, and badges.',
+    descriptionHe: 'צבע לתצוגה בלוח שנה, כרטיסים ותגיות.',
+    descriptionEn: 'Color for calendar, cards, and badges.',
+  },
+  status: {
+    label: 'סטטוס',
+    labelEn: 'Status',
+    descriptionHe: 'בתהליך או הושלם. הושלמו מופיעות למטה בדף הבית.',
+    descriptionEn: 'In process or completed. Completed productions appear lower on the home page.',
+  },
+  coverImage: {
+    label: 'תמונה',
+    labelEn: 'Picture',
+    descriptionHe: 'תמונה שתוצג בכרטיס ההפקה בדף הבית.',
+    descriptionEn: 'Picture shown on the production card on the home page.',
   },
   sortOrder: {
     label: 'סדר',

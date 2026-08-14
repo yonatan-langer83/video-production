@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import type { AppUser } from '@/access'
 import { StageBadge } from '@/components/StageBadge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -27,7 +28,7 @@ type BoardCard = {
   openReviewComments: number
 }
 
-type Me = { id: number | string; role?: string }
+type Me = { id: number | string; role?: AppUser['role'] }
 
 export default function BoardPage() {
   const [docs, setDocs] = useState<BoardCard[]>([])

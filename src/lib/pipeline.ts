@@ -92,7 +92,7 @@ export function allowedNextStages(
 
 export const BOARD_STAGES: PipelineStage[] = PIPELINE_STAGES.filter((s) => s !== 'published')
 
-export function queueStagesForRole(role: AppUser['role'] | undefined): PipelineStage[] {
+export function queueStagesForRole(role?: string | null): PipelineStage[] {
   switch (role) {
     case 'editor':
       return ['editing', 'review']
@@ -105,6 +105,6 @@ export function queueStagesForRole(role: AppUser['role'] | undefined): PipelineS
   }
 }
 
-export function boardStagesForRole(role: AppUser['role'] | undefined): PipelineStage[] {
+export function boardStagesForRole(role?: string | null): PipelineStage[] {
   return queueStagesForRole(role)
 }

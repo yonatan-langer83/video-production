@@ -11,16 +11,6 @@ const PUBLIC_PATHS = [
   '/og.png',
   '/favicon.ico',
 ]
-const FALLBACK_ORIGIN = 'https://videos.kabbalah.co.il'
-
-function publicOrigin(req: NextRequest): string {
-  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || ''
-  const proto = req.headers.get('x-forwarded-proto') || 'https'
-  if (!host || host.includes('localhost') || host.startsWith('127.0.0.1')) {
-    return process.env.NEXT_PUBLIC_SERVER_URL || FALLBACK_ORIGIN
-  }
-  return `${proto}://${host}`
-}
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
@@ -46,7 +36,7 @@ export function middleware(req: NextRequest) {
 
   if (
     pathname.startsWith('/admin') ||
-    pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/login')
+    (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/login'))
   ) {
     return NextResponse.next()
   }
@@ -57,7 +47,9 @@ export function middleware(req: NextRequest) {
 
   const token = req.cookies.get('payload-token')?.value
   if (!token && !pathname.startsWith('/admin')) {
-    const loginUrl = new URL('/login', publicOrigin(req))
+    const loginUrl = req.nextUrl.clone()
+    loginUrl.pathname = '/login'
+    loginUrl.search = ''
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }

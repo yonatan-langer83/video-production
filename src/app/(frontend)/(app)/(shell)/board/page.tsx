@@ -64,14 +64,14 @@ export default function BoardPage() {
     const map = new Map<PipelineStage, BoardCard[]>()
     for (const stage of stages) map.set(stage, [])
     for (const doc of docs) {
-      const stage = isPipelineStage(doc.pipelineStage) ? doc.pipelineStage : 'planned'
+      const stage = isPipelineStage(doc.pipelineStage) ? doc.pipelineStage : 'schedule_shoot'
       map.get(stage)?.push(doc)
     }
     return stages.map((stage) => ({ stage, items: map.get(stage) || [] }))
   }, [docs, me?.role])
 
   async function move(card: BoardCard, to: PipelineStage) {
-    const from = isPipelineStage(card.pipelineStage) ? card.pipelineStage : 'planned'
+    const from = isPipelineStage(card.pipelineStage) ? card.pipelineStage : 'schedule_shoot'
     if (isBackwardMove(from, to) && !window.confirm('להחזיר לשלב קודם? / Move back a stage?')) return
     const res = await fetch(`/api/app/projects/${card.id}`, {
       method: 'PATCH',
@@ -124,7 +124,7 @@ export default function BoardPage() {
             </div>
             <div className="space-y-2">
               {items.map((card) => {
-                const from = isPipelineStage(card.pipelineStage) ? card.pipelineStage : 'planned'
+                const from = isPipelineStage(card.pipelineStage) ? card.pipelineStage : 'schedule_shoot'
                 const next = me
                   ? allowedNextStages(me as never, from).filter((s) =>
                       canMoveStage(me as never, from, s),

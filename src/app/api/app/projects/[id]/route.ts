@@ -65,7 +65,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   if (raw.pipelineStage != null) {
     const to = raw.pipelineStage
-    const from = isPipelineStage(episode.pipelineStage) ? episode.pipelineStage : 'planned'
+    const from = isPipelineStage(episode.pipelineStage) ? episode.pipelineStage : 'schedule_shoot'
     if (!isPipelineStage(to) || !canMoveStage(user, from, to)) {
       return NextResponse.json({ error: 'Stage move not allowed' }, { status: 403 })
     }

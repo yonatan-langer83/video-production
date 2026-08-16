@@ -83,7 +83,7 @@ export async function GET(req: Request) {
       id: p.id,
       title: p.title,
       episodeNumber: p.episodeNumber,
-      pipelineStage: p.pipelineStage || 'planned',
+      pipelineStage: p.pipelineStage || 'schedule_shoot',
       filmedAt: p.filmedAt,
       publishedAt: p.publishedAt,
       shootToEditorNotes: p.shootToEditorNotes,

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { DEFAULT_PIPELINE_STAGE, PIPELINE_LABELS, PIPELINE_STAGES } from '@/lib/pipeline'
 import { cn } from '@/lib/utils'
 import type { Production, VideoProject } from '@/payload-types'
 
@@ -113,20 +114,18 @@ function FieldInput({
       <select
         id={field.key}
         name={field.key}
-        defaultValue={String(defaults.pipelineStage || 'planned')}
+        defaultValue={String(defaults.pipelineStage || DEFAULT_PIPELINE_STAGE)}
         disabled={disabled}
         className={cn(
           'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm',
           inputClass,
         )}
       >
-        <option value="planned">בתכנון</option>
-        <option value="to_film">מוכן לצילום</option>
-        <option value="filmed">צולם</option>
-        <option value="subtitling">בתמלול</option>
-        <option value="editing">בעריכה</option>
-        <option value="review">לבדיקה</option>
-        <option value="published">פורסם</option>
+        {PIPELINE_STAGES.map((s) => (
+          <option key={s} value={s}>
+            {PIPELINE_LABELS[s].he} / {PIPELINE_LABELS[s].en}
+          </option>
+        ))}
       </select>
     )
   }

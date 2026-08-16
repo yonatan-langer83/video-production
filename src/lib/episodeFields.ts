@@ -1,6 +1,7 @@
 import type { Production, VideoProject } from '@/payload-types'
 import type { AppUser } from '@/access'
 import { formatFieldDescription, formatOptionLabel } from '@/lib/fieldMeta'
+import { PIPELINE_LABELS } from '@/lib/pipeline'
 
 const STATUS_LABELS: Record<string, string> = {
   future: 'עתידי',
@@ -137,8 +138,8 @@ export const EPISODE_FIELDS: EpisodeFieldDef[] = [
     key: 'pipelineStage',
     label: 'שלב',
     labelEn: 'Pipeline stage',
-    descriptionHe: 'שלב בתהליך: תכנון, צילום, תמלול, עריכה, בדיקה, פרסום.',
-    descriptionEn: 'Workflow stage: planned, shoot, subtitling, editing, review, published.',
+    descriptionHe: 'שלב בתהליך: קביעת יום צילום עד פרסום.',
+    descriptionEn: 'Workflow stage from scheduling the shoot through publishing.',
     group: 'basic',
     listColumn: true,
     fieldType: 'pipeline',
@@ -519,16 +520,9 @@ export function formatEpisodeFieldDisplay(episode: VideoProject, field: EpisodeF
     return STATUS_LABELS[String(value)] || String(value)
   }
   if (field.fieldType === 'pipeline') {
-    const labels: Record<string, string> = {
-      planned: 'בתכנון',
-      to_film: 'מוכן לצילום',
-      filmed: 'צולם',
-      subtitling: 'בתמלול',
-      editing: 'בעריכה',
-      review: 'לבדיקה',
-      published: 'פורסם',
-    }
-    return labels[String(value)] || String(value)
+    const key = String(value)
+    const labels = PIPELINE_LABELS[key as keyof typeof PIPELINE_LABELS]
+    return labels ? labels.he : key
   }
   if (field.fieldType === 'relationship') {
     if (typeof value === 'object' && value !== null && 'name' in value) {

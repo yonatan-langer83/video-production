@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       production: productionId,
       title: body.title || 'פרק חדש',
       status: body.status || 'in_progress',
-      pipelineStage: 'planned',
+      pipelineStage: 'schedule_shoot',
       description: body.description,
       episodeNumber: body.episodeNumber,
     },

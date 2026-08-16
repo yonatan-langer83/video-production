@@ -1,34 +1,39 @@
 import type { AppUser } from '@/access'
 
 export const PIPELINE_STAGES = [
-  'planned',
-  'to_film',
-  'filmed',
-  'subtitling',
+  'schedule_shoot',
+  'filming',
+  'prep_editing',
   'editing',
-  'review',
+  'capwing',
+  'capwing_old',
+  'done',
   'published',
 ] as const
 
 export type PipelineStage = (typeof PIPELINE_STAGES)[number]
 
+export const DEFAULT_PIPELINE_STAGE: PipelineStage = 'schedule_shoot'
+
 export const PIPELINE_LABELS: Record<PipelineStage, { he: string; en: string }> = {
-  planned: { he: 'בתכנון', en: 'Planned' },
-  to_film: { he: 'מוכן לצילום', en: 'To film' },
-  filmed: { he: 'צולם', en: 'Filmed' },
-  subtitling: { he: 'בתמלול', en: 'Subtitling' },
-  editing: { he: 'בעריכה', en: 'Editing' },
-  review: { he: 'לבדיקה', en: 'Review' },
+  schedule_shoot: { he: 'קביעת יום צילום', en: 'Schedule shoot day' },
+  filming: { he: 'צילום', en: 'Filming' },
+  prep_editing: { he: 'הכנה לעריכה', en: 'Prep for editing' },
+  editing: { he: 'עריכה', en: 'Editing' },
+  capwing: { he: 'עלה לקאפ ווינג', en: 'Uploaded to CapWing' },
+  capwing_old: { he: 'עבר לתיקייה ישן בקאפ ווינג', en: 'CapWing old folder' },
+  done: { he: 'גמור', en: 'Done' },
   published: { he: 'פורסם', en: 'Published' },
 }
 
 export const PIPELINE_BADGE_CLASS: Record<PipelineStage, string> = {
-  planned: 'bg-slate-100 text-slate-800',
-  to_film: 'bg-sky-100 text-sky-800',
-  filmed: 'bg-violet-100 text-violet-800',
-  subtitling: 'bg-amber-100 text-amber-900',
+  schedule_shoot: 'bg-slate-100 text-slate-800',
+  filming: 'bg-sky-100 text-sky-800',
+  prep_editing: 'bg-violet-100 text-violet-800',
   editing: 'bg-orange-100 text-orange-800',
-  review: 'bg-pink-100 text-pink-800',
+  capwing: 'bg-amber-100 text-amber-900',
+  capwing_old: 'bg-yellow-100 text-yellow-900',
+  done: 'bg-teal-100 text-teal-800',
   published: 'bg-emerald-100 text-emerald-800',
 }
 
@@ -46,21 +51,22 @@ export function isBackwardMove(from: PipelineStage, to: PipelineStage): boolean 
 
 const ROLE_TRANSITIONS: Record<string, Array<[PipelineStage, PipelineStage]>> = {
   editor: [
-    ['subtitling', 'editing'],
-    ['editing', 'review'],
-    ['review', 'editing'],
+    ['prep_editing', 'editing'],
+    ['editing', 'prep_editing'],
+    ['editing', 'capwing'],
+    ['capwing', 'editing'],
   ],
   subtitler: [
-    ['filmed', 'subtitling'],
-    ['subtitling', 'filmed'],
-    ['subtitling', 'editing'],
-    ['editing', 'subtitling'],
+    ['capwing', 'capwing_old'],
+    ['capwing_old', 'capwing'],
+    ['capwing_old', 'done'],
+    ['done', 'capwing_old'],
   ],
   av_manager: [
-    ['planned', 'to_film'],
-    ['to_film', 'planned'],
-    ['to_film', 'filmed'],
-    ['filmed', 'to_film'],
+    ['schedule_shoot', 'filming'],
+    ['filming', 'schedule_shoot'],
+    ['filming', 'prep_editing'],
+    ['prep_editing', 'filming'],
   ],
 }
 
@@ -95,11 +101,11 @@ export const BOARD_STAGES: PipelineStage[] = PIPELINE_STAGES.filter((s) => s !==
 export function queueStagesForRole(role?: string | null): PipelineStage[] {
   switch (role) {
     case 'editor':
-      return ['editing', 'review']
+      return ['prep_editing', 'editing']
     case 'subtitler':
-      return ['filmed', 'subtitling']
+      return ['capwing', 'capwing_old']
     case 'av_manager':
-      return ['planned', 'to_film', 'filmed']
+      return ['schedule_shoot', 'filming', 'prep_editing']
     default:
       return [...BOARD_STAGES]
   }

@@ -401,10 +401,10 @@ export interface VideoProject {
    */
   status: 'future' | 'in_progress' | 'completed';
   /**
-   * שלב בתהליך: תכנון, צילום, תמלול, עריכה, בדיקה, פרסום.
-   * Workflow stage: planned, shoot, subtitling, editing, review, published.
+   * שלב בתהליך: קביעת יום צילום עד פרסום.
+   * Workflow stage from scheduling the shoot through publishing.
    */
-  pipelineStage: 'planned' | 'to_film' | 'filmed' | 'subtitling' | 'editing' | 'review' | 'published';
+  pipelineStage: 'schedule_shoot' | 'filming' | 'prep_editing' | 'editing' | 'capwing' | 'capwing_old' | 'done' | 'published';
   /**
    * מנהל הפרויקט האחראי על הפרק.
    * Project manager responsible for this episode.

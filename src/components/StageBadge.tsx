@@ -15,7 +15,7 @@ export function StageBadge({
   count?: number
   className?: string
 }) {
-  const value: PipelineStage = isPipelineStage(stage) ? stage : 'planned'
+  const value: PipelineStage = isPipelineStage(stage) ? stage : 'schedule_shoot'
   const label = PIPELINE_LABELS[value]
   return (
     <span

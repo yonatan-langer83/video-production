@@ -119,12 +119,25 @@ async function migrate() {
   if (await tableExists('video_projects')) {
     if (!(await columnExists('video_projects', 'pipeline_stage'))) {
       await client.execute(
-        `ALTER TABLE video_projects ADD COLUMN pipeline_stage TEXT DEFAULT 'planned'`,
+        `ALTER TABLE video_projects ADD COLUMN pipeline_stage TEXT DEFAULT 'schedule_shoot'`,
       )
       console.log('Added pipeline_stage to video_projects')
     }
+    const stageRemap: Array<[string, string]> = [
+      ['planned', 'schedule_shoot'],
+      ['to_film', 'filming'],
+      ['filmed', 'prep_editing'],
+      ['subtitling', 'capwing'],
+      ['review', 'capwing_old'],
+    ]
+    for (const [from, to] of stageRemap) {
+      await client.execute(`UPDATE video_projects SET pipeline_stage = ? WHERE pipeline_stage = ?`, [
+        to,
+        from,
+      ])
+    }
     await client.execute(
-      `UPDATE video_projects SET pipeline_stage = 'planned' WHERE pipeline_stage IS NULL OR pipeline_stage = ''`,
+      `UPDATE video_projects SET pipeline_stage = 'schedule_shoot' WHERE pipeline_stage IS NULL OR pipeline_stage = ''`,
     )
     if (!(await columnExists('video_projects', 'setup_notes'))) {
       await client.execute(`ALTER TABLE video_projects ADD COLUMN setup_notes TEXT`)

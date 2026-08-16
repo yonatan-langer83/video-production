@@ -1,6 +1,7 @@
 import type { Field } from 'payload'
 
 import { fieldAccess } from '@/access'
+import { DEFAULT_PIPELINE_STAGE, PIPELINE_LABELS, PIPELINE_STAGES } from '@/lib/pipeline'
 import {
   EPISODE_FIELDS,
   payloadFieldDescription,
@@ -53,16 +54,11 @@ function payloadType(def: EpisodeFieldDef, extraAdmin?: Record<string, unknown>)
         ...base,
         type: 'select',
         required: true,
-        defaultValue: 'planned',
-        options: [
-          { label: 'בתכנון / Planned', value: 'planned' },
-          { label: 'מוכן לצילום / To film', value: 'to_film' },
-          { label: 'צולם / Filmed', value: 'filmed' },
-          { label: 'בתמלול / Subtitling', value: 'subtitling' },
-          { label: 'בעריכה / Editing', value: 'editing' },
-          { label: 'לבדיקה / Review', value: 'review' },
-          { label: 'פורסם / Published', value: 'published' },
-        ],
+        defaultValue: DEFAULT_PIPELINE_STAGE,
+        options: PIPELINE_STAGES.map((s) => ({
+          label: `${PIPELINE_LABELS[s].he} / ${PIPELINE_LABELS[s].en}`,
+          value: s,
+        })),
       }
     case 'relationship':
       return {

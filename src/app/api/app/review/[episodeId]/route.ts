@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { getCurrentUser } from '@/lib/auth'
 import { getPayloadClient } from '@/lib/payload'
-import { canMoveStage } from '@/lib/pipeline'
+import { canMoveStage, isPipelineStage } from '@/lib/pipeline'
 import { getVisibleEpisode } from '@/lib/productions'
 
 function canCreateCut(role?: string) {
@@ -112,7 +112,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ episode
       id: episodeId,
       overrideAccess: true,
     })
-    const from = (episode.pipelineStage as 'review' | undefined) || 'review'
+    const from = isPipelineStage(episode.pipelineStage) ? episode.pipelineStage : 'done'
     if (!canMoveStage(user, from, body.stage)) {
       return NextResponse.json({ error: 'Stage move not allowed' }, { status: 403 })
     }
